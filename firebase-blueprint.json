@@ -1,0 +1,179 @@
+{
+  "entities": {
+    "Merchant": {
+      "title": "Merchant",
+      "description": "A verified Waterloo Elite Business Association member company or business directory entry.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique merchant identifier" },
+        "name": { "type": "string", "maxLength": 100, "description": "Chinese or primary business name" },
+        "nameEn": { "type": "string", "maxLength": 120, "description": "English registration name" },
+        "category": { "type": "string", "maxLength": 50, "description": "Industry category" },
+        "tier": { "type": "string", "maxLength": 50, "description": "Chamber membership tier" },
+        "logo": { "type": "string", "maxLength": 20, "description": "Emoji or logo identifier" },
+        "tagline": { "type": "string", "maxLength": 200, "description": "One-line business highlight" },
+        "description": { "type": "string", "maxLength": 2000, "description": "Detailed business background" },
+        "repName": { "type": "string", "maxLength": 50, "description": "Legal or business representative name" },
+        "repTitle": { "type": "string", "maxLength": 50, "description": "Representative title" },
+        "phone": { "type": "string", "maxLength": 30, "description": "Contact phone number" },
+        "email": { "type": "string", "format": "email", "maxLength": 100, "description": "Contact email" },
+        "website": { "type": "string", "maxLength": 200, "description": "Company website URL" },
+        "address": { "type": "string", "maxLength": 200, "description": "Office or facility address in Waterloo region" },
+        "establishedYear": { "type": "number", "description": "Founding year" },
+        "rating": { "type": "number", "description": "Average rating 0-5" },
+        "reviewCount": { "type": "number", "description": "Number of reviews" },
+        "credibilityScore": { "type": "number", "description": "Chamber AI credibility score 0-100" },
+        "tags": { "type": "string", "description": "Comma separated business tags" },
+        "services": { "type": "string", "description": "Comma separated core services" },
+        "memberPrivilege": { "type": "string", "maxLength": 500, "description": "Exclusive member discount or privilege" },
+        "verified": { "type": "boolean", "description": "Whether the merchant is verified by the chamber" },
+        "featured": { "type": "boolean", "description": "Whether the merchant is featured" },
+        "ownerUid": { "type": "string", "maxLength": 128, "description": "UID of the user who registered or claimed the business" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" }
+      },
+      "required": ["name", "category", "repName"]
+    },
+    "HelpPost": {
+      "title": "HelpPost",
+      "description": "A mutual aid, supply-demand, or collaboration request posted by a chamber member.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique post identifier" },
+        "authorUid": { "type": "string", "maxLength": 128, "description": "User UID of author" },
+        "authorName": { "type": "string", "maxLength": 50, "description": "Author display name" },
+        "authorCompany": { "type": "string", "maxLength": 100, "description": "Author company" },
+        "authorAvatar": { "type": "string", "maxLength": 20, "description": "Author avatar emoji or icon" },
+        "title": { "type": "string", "maxLength": 200, "description": "Help request title" },
+        "category": { "type": "string", "maxLength": 50, "description": "Post category" },
+        "description": { "type": "string", "maxLength": 2500, "description": "Detailed requirements" },
+        "rewardPoints": { "type": "number", "description": "Bounty points held in escrow" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" },
+        "status": { "type": "string", "enum": ["待对接", "对接中", "已圆满解决"], "description": "Status of the help post" },
+        "responsesCount": { "type": "number", "description": "Number of responses" },
+        "tags": { "type": "string", "description": "Comma separated tags" },
+        "contactInfo": { "type": "string", "maxLength": 100, "description": "Preferred contact info" }
+      },
+      "required": ["title", "category", "description", "authorName"]
+    },
+    "HelpOffer": {
+      "title": "HelpOffer",
+      "description": "A response or solution offer submitted to a help post by another member.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique offer identifier" },
+        "postId": { "type": "string", "description": "Referenced help post ID" },
+        "responderUid": { "type": "string", "maxLength": 128, "description": "User UID of responder" },
+        "responderName": { "type": "string", "maxLength": 50, "description": "Responder name" },
+        "responderCompany": { "type": "string", "maxLength": 100, "description": "Responder company" },
+        "content": { "type": "string", "maxLength": 2000, "description": "Offer description or resource" },
+        "createdAt": { "type": "string", "description": "Timestamp" },
+        "accepted": { "type": "boolean", "description": "Whether the offer was accepted by the post author" }
+      },
+      "required": ["postId", "responderName", "content"]
+    },
+    "ChamberEvent": {
+      "title": "ChamberEvent",
+      "description": "An official summit, private salon, or networking event hosted by WEBA.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique event identifier" },
+        "title": { "type": "string", "maxLength": 200, "description": "Event title" },
+        "type": { "type": "string", "maxLength": 50, "description": "Event type" },
+        "date": { "type": "string", "maxLength": 50, "description": "Date description" },
+        "time": { "type": "string", "maxLength": 50, "description": "Time description" },
+        "location": { "type": "string", "maxLength": 200, "description": "Event location in Waterloo" },
+        "capacity": { "type": "number", "description": "Max attendee limit" },
+        "registeredCount": { "type": "number", "description": "Current number of registered attendees" },
+        "pointsRequired": { "type": "number", "description": "Points needed to register" },
+        "pointsReward": { "type": "number", "description": "Points awarded on check-in attendance" },
+        "coverImage": { "type": "string", "maxLength": 500, "description": "Cover image URL" },
+        "description": { "type": "string", "maxLength": 2000, "description": "Event overview" }
+      },
+      "required": ["title", "date", "location"]
+    },
+    "EventRegistration": {
+      "title": "EventRegistration",
+      "description": "User registration for a chamber event.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Registration ID" },
+        "eventId": { "type": "string", "description": "Event ID" },
+        "userId": { "type": "string", "maxLength": 128, "description": "Member UID" },
+        "userName": { "type": "string", "maxLength": 50, "description": "Member name" },
+        "userCompany": { "type": "string", "maxLength": 100, "description": "Member company" },
+        "registeredAt": { "type": "string", "description": "Registration timestamp" },
+        "checkedIn": { "type": "boolean", "description": "Whether attendee scanned QR code" },
+        "ticketCode": { "type": "string", "maxLength": 50, "description": "Verification ticket code" }
+      },
+      "required": ["eventId", "userId"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "A member profile stored in Firestore.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128, "description": "User Firebase Auth UID" },
+        "name": { "type": "string", "maxLength": 50, "description": "Member name" },
+        "email": { "type": "string", "format": "email", "maxLength": 100, "description": "Member email" },
+        "company": { "type": "string", "maxLength": 100, "description": "Member enterprise" },
+        "title": { "type": "string", "maxLength": 50, "description": "Job title or role" },
+        "phone": { "type": "string", "maxLength": 30, "description": "Phone number" },
+        "avatar": { "type": "string", "maxLength": 20, "description": "Avatar emoji" },
+        "tier": { "type": "string", "maxLength": 50, "description": "Chamber member tier" },
+        "points": { "type": "number", "description": "Member points balance" },
+        "bio": { "type": "string", "maxLength": 500, "description": "Personal introduction" },
+        "industry": { "type": "string", "maxLength": 50, "description": "Business sector" },
+        "joinedDate": { "type": "string", "maxLength": 50, "description": "Joined date" },
+        "hasCheckedInToday": { "type": "boolean", "description": "Today's checkin flag" },
+        "lastCheckinDate": { "type": "string", "maxLength": 20, "description": "Last checkin YYYY-MM-DD" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" }
+      },
+      "required": ["uid", "name", "email"]
+    },
+    "PointsTransaction": {
+      "title": "PointsTransaction",
+      "description": "Points history journal record.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Transaction ID" },
+        "userId": { "type": "string", "maxLength": 128, "description": "User UID" },
+        "title": { "type": "string", "maxLength": 100, "description": "Action description" },
+        "change": { "type": "number", "description": "Points delta" },
+        "date": { "type": "string", "maxLength": 50, "description": "Formatted timestamp" },
+        "type": { "type": "string", "maxLength": 50, "description": "Transaction type" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" }
+      },
+      "required": ["userId", "title", "change"]
+    }
+  },
+  "firestore": {
+    "/merchants/{merchantId}": {
+      "schema": { "$ref": "#/entities/Merchant" },
+      "description": "Waterloo businesses and Chamber members directory"
+    },
+    "/help_posts/{postId}": {
+      "schema": { "$ref": "#/entities/HelpPost" },
+      "description": "Chamber mutual aid requests and business collaboration board"
+    },
+    "/help_offers/{offerId}": {
+      "schema": { "$ref": "#/entities/HelpOffer" },
+      "description": "Member offers and solutions submitted to help posts"
+    },
+    "/events/{eventId}": {
+      "schema": { "$ref": "#/entities/ChamberEvent" },
+      "description": "Official Chamber events, summits and closed-door salons"
+    },
+    "/event_registrations/{registrationId}": {
+      "schema": { "$ref": "#/entities/EventRegistration" },
+      "description": "User event registration and check-in tickets"
+    },
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Member personal profile and business credentials"
+    },
+    "/points_transactions/{transactionId}": {
+      "schema": { "$ref": "#/entities/PointsTransaction" },
+      "description": "Ledger of earned and spent reputation points"
+    }
+  }
+}

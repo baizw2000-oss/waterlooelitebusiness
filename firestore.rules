@@ -1,0 +1,64 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128;
+    }
+
+    // 1. Merchants Directory & Applications
+    // Allow public read; allow visitors and members to submit applications and update approval status
+    match /merchants/{merchantId} {
+      allow read: if true;
+      allow create: if isValidId(merchantId);
+      allow update: if isValidId(merchantId);
+      allow delete: if true;
+    }
+
+    // 2. Mutual Help Posts
+    match /help_posts/{postId} {
+      allow read: if true;
+      allow create: if isValidId(postId);
+      allow update: if isValidId(postId);
+      allow delete: if true;
+    }
+
+    // 3. Help Offers
+    match /help_offers/{offerId} {
+      allow read: if true;
+      allow create: if isValidId(offerId);
+      allow update: if isValidId(offerId);
+      allow delete: if true;
+    }
+
+    // 4. Chamber Events
+    match /events/{eventId} {
+      allow read: if true;
+      allow create, update, delete: if true;
+    }
+
+    // 5. Event Registrations & Tickets
+    match /event_registrations/{registrationId} {
+      allow read: if true;
+      allow create, update, delete: if isValidId(registrationId);
+    }
+
+    // 6. User Profiles (Members)
+    match /users/{userId} {
+      allow read: if true;
+      allow create, update, delete: if isValidId(userId);
+    }
+
+    // 7. Points Transactions
+    match /points_transactions/{transactionId} {
+      allow read: if true;
+      allow create: if isValidId(transactionId);
+      allow update, delete: if true;
+    }
+
+    // 8. System Configurations (SMTP & Notification Settings)
+    match /system_config/{configId} {
+      allow read, write: if true;
+    }
+  }
+}

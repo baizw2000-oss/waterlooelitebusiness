@@ -1,0 +1,8 @@
+{
+  "name": "Waterloo Elite Business Association | 滑铁卢名商会",
+  "description": "滑铁卢名商会会员高效互助平台：汇聚本地精英商家名录、商机对接、活动报名签到、会员信用积分榜与AI声誉舆情分析引擎。",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
