@@ -11,7 +11,7 @@ export type BusinessCategory =
   | '跨境物流'
   | '金融投资';
 
-export type MemberTier = '创会理事单位' | '金牌会员单位' | '认证商户' | '青年创客商户';
+export type MemberTier = '创会理事单位' | '金牌会员单位' | '认证商户' | '青年创客商户' | '外部客户';
 
 export interface Merchant {
   id: string | number;
@@ -76,6 +76,18 @@ export interface HelpPost {
   authorName: string;
   authorCompany: string;
   authorAvatar: string;
+  authorEmail?: string;
+  authorPhone?: string;
+  isExternalProspect?: boolean; // 是否为外部潜在客户/非会员发起
+  auditStatus?: 'APPROVED' | 'PENDING_APPROVAL' | 'REJECTED'; // 审核状态：APPROVED已通过、PENDING_APPROVAL待秘书处审核、REJECTED已驳回
+  broadcastStatus?: 'BROADCASTED' | 'NOT_BROADCASTED'; // 是否已执行全商会邮件群发
+  broadcastedAt?: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  isDelisted?: boolean; // 管理员是否已执行下架
+  delistedAt?: string;
+  delistedBy?: string;
+  delistReason?: string;
   title: string;
   category: '商机合作' | '供需对接' | '紧急求助' | '资源共享';
   description: string;
@@ -91,7 +103,7 @@ export interface HelpPost {
 export interface ChamberEvent {
   id: string | number;
   title: string;
-  type: '高端峰会' | '私董会' | '投资酒会' | '公益慈善' | '创业研讨';
+  type: '高端峰会' | '私董会' | '投资酒会' | '公益慈善' | '创业研讨' | '业务推介';
   date: string;
   time: string;
   location: string;
@@ -102,9 +114,15 @@ export interface ChamberEvent {
   coverImage: string;
   description: string;
   agenda: { time: string; topic: string; speaker: string }[];
+  organizerUid?: string;
+  organizerName?: string;
+  organizerCompany?: string;
+  targetAudience?: 'ALL' | 'MEMBERS_ONLY'; // ALL公开(潜客+会员) / MEMBERS_ONLY商会闭门(仅限会员)
   isRegistered?: boolean;
   ticketQrCode?: string;
   checkedIn?: boolean;
+  isDelisted?: boolean;
+  createdAt?: string;
 }
 
 export interface PointsTransaction {
@@ -150,6 +168,8 @@ export interface UserProfile {
   bio: string;
   industry: string;
   joinedDate: string;
+  isMember?: boolean; // 是否已完成商会实名认证（true: 实名认证企业会员; false: 外部商业访客/潜客）
+  merchantId?: string | number; // 对应绑定的商会名录ID
   hasCheckedInToday?: boolean;
   lastCheckinDate?: string;
   wechatId?: string;

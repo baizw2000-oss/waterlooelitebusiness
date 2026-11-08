@@ -6,6 +6,7 @@ import {
   PointsTransaction, 
   MemberTier 
 } from '../types';
+import { UserAvatar } from './UserAvatar';
 import { 
   User, 
   Building2, 
@@ -67,15 +68,18 @@ export const UserProfileCenter: React.FC<UserProfileCenterProps> = ({
   const [address, setAddress] = useState(user.address || 'Waterloo, ON');
   const [avatar, setAvatar] = useState(user.avatar || '👨‍💼');
 
+  const safeName = user.name && !user.name.startsWith('data:') && user.name.length < 50 ? user.name : 'Brandon Bai (白政玮)';
+  const safeCompany = user.company && !user.company.startsWith('data:') && user.company.length < 50 ? user.company : 'BV Financial';
+
   // Filter posts created by current user
   const myPosts = posts.filter(
-    (p) => p.authorUid === user.uid || p.authorName.includes(user.name) || p.authorCompany.includes(user.company)
+    (p) => p.authorUid === user.uid || p.authorName.includes(safeName) || p.authorCompany.includes(safeCompany)
   );
 
   // Filter posts where user submitted an offer
   const myOffers = posts.filter((p) =>
     p.offers.some(
-      (o) => o.responderUid === user.uid || o.responderName.includes(user.name) || o.responderCompany.includes(user.company)
+      (o) => o.responderUid === user.uid || o.responderName.includes(safeName) || o.responderCompany.includes(safeCompany)
     )
   );
 
@@ -120,8 +124,8 @@ export const UserProfileCenter: React.FC<UserProfileCenterProps> = ({
           {/* Avatar & Main Info */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
             <div className="relative">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-slate-800 border-2 border-amber-400/50 flex items-center justify-center text-4xl sm:text-5xl shadow-xl">
-                {user.avatar}
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-slate-800 border-2 border-amber-400/50 flex items-center justify-center shadow-xl overflow-hidden">
+                <UserAvatar avatar={user.avatar} name={safeName} size="xl" className="w-full h-full object-cover" />
               </div>
               <span className="absolute -bottom-1 -right-1 px-2 py-0.5 rounded-full bg-emerald-500 text-slate-950 font-bold text-[10px] border-2 border-slate-900">
                 在线
@@ -131,7 +135,7 @@ export const UserProfileCenter: React.FC<UserProfileCenterProps> = ({
             <div className="space-y-1.5">
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="text-xl sm:text-2xl font-black text-white">
-                  {user.name}
+                  {safeName}
                 </h2>
                 <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold flex items-center gap-1">
                   <Crown className="w-3.5 h-3.5 text-amber-400" />
@@ -144,7 +148,7 @@ export const UserProfileCenter: React.FC<UserProfileCenterProps> = ({
               </div>
 
               <p className="text-sm text-slate-300 font-medium">
-                {user.title} · <strong className="text-white">{user.company}</strong>
+                {user.title} · <strong className="text-white">{safeCompany}</strong>
               </p>
 
               <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400 pt-1">
@@ -553,8 +557,8 @@ export const UserProfileCenter: React.FC<UserProfileCenterProps> = ({
             </div>
 
             <div className="space-y-2">
-              <div className="w-20 h-20 rounded-2xl bg-slate-800 border-2 border-amber-400 mx-auto flex items-center justify-center text-4xl shadow-inner">
-                {user.avatar}
+              <div className="w-20 h-20 rounded-2xl bg-slate-800 border-2 border-amber-400 mx-auto flex items-center justify-center shadow-inner overflow-hidden">
+                <UserAvatar avatar={user.avatar} name={user.name} size="lg" className="w-full h-full object-cover" />
               </div>
               <h3 className="text-lg font-black text-white">{user.name}</h3>
               <p className="text-xs text-amber-300 font-semibold">{user.company}</p>

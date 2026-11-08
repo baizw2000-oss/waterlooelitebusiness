@@ -51,7 +51,11 @@
         "status": { "type": "string", "enum": ["待对接", "对接中", "已圆满解决"], "description": "Status of the help post" },
         "responsesCount": { "type": "number", "description": "Number of responses" },
         "tags": { "type": "string", "description": "Comma separated tags" },
-        "contactInfo": { "type": "string", "maxLength": 100, "description": "Preferred contact info" }
+        "contactInfo": { "type": "string", "maxLength": 100, "description": "Preferred contact info" },
+        "isDelisted": { "type": "boolean", "description": "Whether the post has been delisted by an administrator" },
+        "delistedAt": { "type": "string", "description": "Timestamp when the post was delisted" },
+        "delistedBy": { "type": "string", "maxLength": 100, "description": "Administrator who delisted the post" },
+        "delistReason": { "type": "string", "maxLength": 500, "description": "Reason for delisting" }
       },
       "required": ["title", "category", "description", "authorName"]
     },

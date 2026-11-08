@@ -498,28 +498,211 @@ export async function addOfferToHelpPost(postId: string | number, offer: HelpOff
   }
 }
 
-export async function acceptOfferInFirestore(postId: string | number, offerId: string | number): Promise<void> {
+export async function acceptOfferInFirestore(
+  postId: string | number,
+  offerId: string | number
+): Promise<void> {
   const pId = String(postId);
+  const oId = String(offerId);
+  try {
+    const cached = localStorage.getItem(LOCAL_STORAGE_KEYS.POSTS);
+    if (cached) {
+      const list: HelpPost[] = JSON.parse(cached);
+      const updated = list.map((p) => {
+        if (String(p.id) === pId) {
+          return {
+            ...p,
+            status: '已圆满解决' as const,
+            offers: (p.offers || []).map((o) =>
+              String(o.id) === oId ? { ...o, accepted: true } : o
+            ),
+          };
+        }
+        return p;
+      });
+      localStorage.setItem(LOCAL_STORAGE_KEYS.POSTS, JSON.stringify(updated));
+    }
+  } catch (e) {}
+
   try {
     const postRef = doc(db, 'help_posts', pId);
     const postSnap = await getDoc(postRef);
     if (postSnap.exists()) {
       const data = postSnap.data() as HelpPost;
-      const currentOffers = data.offers || [];
-      const updatedOffers = currentOffers.map((o) =>
-        String(o.id) === String(offerId) ? { ...o, accepted: true } : o
+      const updatedOffers = (data.offers || []).map((o) =>
+        String(o.id) === oId ? { ...o, accepted: true } : o
       );
       await updateDoc(postRef, {
-        offers: updatedOffers,
         status: '已圆满解决',
+        offers: updatedOffers,
       });
     }
   } catch (error) {
-    console.warn('Error accepting offer:', error);
+    console.warn('Error accepting offer in Firestore:', error);
   }
 }
 
-// 8. Event RSVP & Check-in
+export async function updateHelpPostInFirestore(
+  postId: string | number,
+  updates: Partial<HelpPost>
+): Promise<void> {
+  const pId = String(postId);
+  try {
+    const cached = localStorage.getItem(LOCAL_STORAGE_KEYS.POSTS);
+    if (cached) {
+      const list: HelpPost[] = JSON.parse(cached);
+      const updated = list.map((p) => (String(p.id) === pId ? { ...p, ...updates } : p));
+      localStorage.setItem(LOCAL_STORAGE_KEYS.POSTS, JSON.stringify(updated));
+    }
+  } catch (e) {}
+
+  try {
+    const postRef = doc(db, 'help_posts', pId);
+    await updateDoc(postRef, updates);
+  } catch (error) {
+    console.warn('Error updating help post in Firestore:', error);
+  }
+}
+
+export async function deleteHelpPostFromFirestore(postId: string | number): Promise<void> {
+  const pId = String(postId);
+  try {
+    const cached = localStorage.getItem(LOCAL_STORAGE_KEYS.POSTS);
+    if (cached) {
+      const list: HelpPost[] = JSON.parse(cached);
+      const filtered = list.filter((p) => String(p.id) !== pId);
+      localStorage.setItem(LOCAL_STORAGE_KEYS.POSTS, JSON.stringify(filtered));
+    }
+  } catch (e) {}
+
+  try {
+    await deleteDoc(doc(db, 'help_posts', pId));
+  } catch (error) {
+    console.warn('Error deleting help post in Firestore:', error);
+  }
+}
+
+export async function delistHelpPostInFirestore(
+  postId: string | number,
+  reason: string = '不符合商会发布规范或已失效',
+  adminName: string = '商会秘书处'
+): Promise<void> {
+  const pId = String(postId);
+  const updates: Partial<HelpPost> = {
+    isDelisted: true,
+    delistedAt: new Date().toISOString(),
+    delistedBy: adminName,
+    delistReason: reason,
+  };
+
+  try {
+    const cached = localStorage.getItem(LOCAL_STORAGE_KEYS.POSTS);
+    if (cached) {
+      const list: HelpPost[] = JSON.parse(cached);
+      const updated = list.map((p) => (String(p.id) === pId ? { ...p, ...updates } : p));
+      localStorage.setItem(LOCAL_STORAGE_KEYS.POSTS, JSON.stringify(updated));
+    }
+  } catch (e) {}
+
+  try {
+    const postRef = doc(db, 'help_posts', pId);
+    await updateDoc(postRef, updates);
+  } catch (error) {
+    console.warn('Error delisting help post in Firestore:', error);
+  }
+}
+
+export async function relistHelpPostInFirestore(
+  postId: string | number,
+  adminName: string = '商会秘书处'
+): Promise<void> {
+  const pId = String(postId);
+  const updates: Partial<HelpPost> = {
+    isDelisted: false,
+    delistedAt: undefined,
+    delistedBy: undefined,
+    delistReason: undefined,
+  };
+
+  try {
+    const cached = localStorage.getItem(LOCAL_STORAGE_KEYS.POSTS);
+    if (cached) {
+      const list: HelpPost[] = JSON.parse(cached);
+      const updated = list.map((p) => (String(p.id) === pId ? { ...p, ...updates } : p));
+      localStorage.setItem(LOCAL_STORAGE_KEYS.POSTS, JSON.stringify(updated));
+    }
+  } catch (e) {}
+
+  try {
+    const postRef = doc(db, 'help_posts', pId);
+    await updateDoc(postRef, {
+      isDelisted: false,
+      delistedAt: null,
+      delistedBy: null,
+      delistReason: null,
+    });
+  } catch (error) {
+    console.warn('Error relisting help post in Firestore:', error);
+  }
+}
+
+// 8. Event Operations
+export async function addEventToFirestore(event: ChamberEvent): Promise<void> {
+  const eId = String(event.id);
+  try {
+    const cached = localStorage.getItem(LOCAL_STORAGE_KEYS.EVENTS);
+    const list: ChamberEvent[] = cached ? JSON.parse(cached) : [];
+    const updated = [event, ...list.filter((e) => String(e.id) !== eId)];
+    localStorage.setItem(LOCAL_STORAGE_KEYS.EVENTS, JSON.stringify(updated));
+  } catch (e) {}
+
+  try {
+    await setDoc(doc(db, 'events', eId), event);
+  } catch (error) {
+    console.warn('Error adding event to Firestore:', error);
+  }
+}
+
+export async function updateEventInFirestore(
+  eventId: string | number,
+  updates: Partial<ChamberEvent>
+): Promise<void> {
+  const eId = String(eventId);
+  try {
+    const cached = localStorage.getItem(LOCAL_STORAGE_KEYS.EVENTS);
+    if (cached) {
+      const list: ChamberEvent[] = JSON.parse(cached);
+      const updated = list.map((e) => (String(e.id) === eId ? { ...e, ...updates } : e));
+      localStorage.setItem(LOCAL_STORAGE_KEYS.EVENTS, JSON.stringify(updated));
+    }
+  } catch (e) {}
+
+  try {
+    await updateDoc(doc(db, 'events', eId), updates);
+  } catch (error) {
+    console.warn('Error updating event in Firestore:', error);
+  }
+}
+
+export async function deleteEventFromFirestore(eventId: string | number): Promise<void> {
+  const eId = String(eventId);
+  try {
+    const cached = localStorage.getItem(LOCAL_STORAGE_KEYS.EVENTS);
+    if (cached) {
+      const list: ChamberEvent[] = JSON.parse(cached);
+      const filtered = list.filter((e) => String(e.id) !== eId);
+      localStorage.setItem(LOCAL_STORAGE_KEYS.EVENTS, JSON.stringify(filtered));
+    }
+  } catch (e) {}
+
+  try {
+    await deleteDoc(doc(db, 'events', eId));
+  } catch (error) {
+    console.warn('Error deleting event from Firestore:', error);
+  }
+}
+
+// 8b. Event RSVP & Check-in
 export async function rsvpEventInFirestore(eventId: string | number, user: UserProfile): Promise<void> {
   const eId = String(eventId);
   try {
@@ -617,4 +800,46 @@ export async function addPointsTransactionToFirestore(tx: PointsTransaction): Pr
   } catch (error) {
     console.warn('Could not save points transaction:', error);
   }
+}
+
+// 11. Member Credentials & Password Management (For non-Google & custom domain emails)
+export async function saveMemberPassword(email: string, password: string): Promise<void> {
+  const cleanEmail = email.trim().toLowerCase();
+  try {
+    const credsKey = 'weba_member_credentials';
+    const existing = JSON.parse(localStorage.getItem(credsKey) || '{}');
+    existing[cleanEmail] = password;
+    localStorage.setItem(credsKey, JSON.stringify(existing));
+  } catch (e) {}
+
+  try {
+    const docId = cleanEmail.replace(/[^a-zA-Z0-9_-]/g, '_');
+    await setDoc(doc(db, 'member_credentials', docId), {
+      email: cleanEmail,
+      password: password,
+      updatedAt: new Date().toISOString(),
+    }, { merge: true });
+  } catch (error) {
+    console.warn('Could not save member password to Firestore:', error);
+  }
+}
+
+export async function fetchMemberPassword(email: string): Promise<string | null> {
+  const cleanEmail = email.trim().toLowerCase();
+  try {
+    const credsKey = 'weba_member_credentials';
+    const existing = JSON.parse(localStorage.getItem(credsKey) || '{}');
+    if (existing[cleanEmail]) return existing[cleanEmail];
+  } catch (e) {}
+
+  try {
+    const docId = cleanEmail.replace(/[^a-zA-Z0-9_-]/g, '_');
+    const snap = await getDoc(doc(db, 'member_credentials', docId));
+    if (snap.exists()) {
+      return (snap.data() as any).password || null;
+    }
+  } catch (error) {
+    console.warn('Could not fetch member password from Firestore:', error);
+  }
+  return null;
 }

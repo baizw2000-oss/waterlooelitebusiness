@@ -61,8 +61,8 @@ export const AIReputationModal: React.FC<AIReputationModalProps> = ({
   if (!merchant) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in">
-      <div className="bg-slate-900 border border-cyan-500/40 rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-y-auto shadow-2xl flex flex-col text-slate-100">
+    <div className="fixed inset-0 z-50 flex items-start justify-center p-2.5 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in overflow-y-auto">
+      <div className="bg-slate-900 border border-cyan-500/40 rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-y-auto shadow-2xl flex flex-col text-slate-100 my-3 sm:my-8">
         {/* Header */}
         <div className="sticky top-0 z-10 bg-slate-900/95 backdrop-blur-md px-6 py-4 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2">

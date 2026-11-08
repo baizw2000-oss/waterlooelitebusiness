@@ -608,9 +608,27 @@ app.post('/api/notifications/merchant-application', async (req, res) => {
       return res.status(400).json({ error: '商户资料不完整' });
     }
 
-    const appUrl = process.env.APP_URL || 'https://waterloobusiness.ca';
+    const origin = req.headers.origin || req.headers.referer;
+    let appUrl = process.env.APP_URL;
+    if (!appUrl && origin) {
+      try {
+        const parsed = new URL(String(origin));
+        appUrl = `${parsed.protocol}//${parsed.host}`;
+      } catch {
+        appUrl = 'https://waterloobusiness.ca';
+      }
+    }
+    if (!appUrl) appUrl = 'https://waterloobusiness.ca';
     const auditUrl = `${appUrl}/#directory`;
     const recipients = notificationConfig.adminEmails;
+
+    const escapeHtml = (str: string) =>
+      String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 
     const subject = `【滑铁卢名商会】新商户入驻待审提醒: ${merchant.name} (${merchant.category || '综合商户'})`;
     const snippet = `商户「${merchant.name}」已提交入驻申请，负责人：${merchant.repName || '未填'}，电话：${merchant.phone || '未填'}，请秘书处及时审批。`;
@@ -641,7 +659,7 @@ app.post('/api/notifications/merchant-application', async (req, res) => {
 <body>
   <div class="container">
     <div class="header">
-      <h1>滑铁卢名商会 · 秘书处审核通报</h1>
+      <h1>滑铁卢创商汇 · 秘书处审核通报</h1>
       <p>Waterloo Elite Business Association · New Merchant Application</p>
     </div>
     <div class="content">
@@ -660,40 +678,40 @@ app.post('/api/notifications/merchant-application', async (req, res) => {
           </div>
         </div>` : ''}
         <div class="row"><span class="label">商户分类</span><span class="value">${merchant.entityType === 'individual' ? '👤 个人 / 执业专家' : '🏢 企业商户'}</span></div>
-        <div class="row"><span class="label">${merchant.entityType === 'individual' ? '个人姓名 / 执业称号' : '企业中文全称'}</span><span class="value">\${merchant.name}</span></div>
-        <div class="row"><span class="label">英文全称 / Pinyin</span><span class="value">\${merchant.nameEn || '未填'}</span></div>
-        <div class="row"><span class="label">所属行业板块</span><span class="value">\${merchant.category || '综合商业'}</span></div>
-        <div class="row"><span class="label">法定代表 / 负责人</span><span class="value">\${merchant.repName || '未填'}</span></div>
-        <div class="row"><span class="label">联系电话</span><span class="value">\${merchant.phone || '未填'}</span></div>
-        <div class="row"><span class="label">官方联系邮箱</span><span class="value">\${merchant.email || '未填'}</span></div>
-        <div class="row"><span class="label">官方网址</span><span class="value">\${merchant.website || '未填'}</span></div>
-        <div class="row"><span class="label">滑铁卢驻地地址</span><span class="value">\${merchant.address || 'Waterloo, ON'}</span></div>
+        <div class="row"><span class="label">${merchant.entityType === 'individual' ? '个人姓名 / 执业称号' : '企业中文全称'}</span><span class="value">${escapeHtml(merchant.name)}</span></div>
+        <div class="row"><span class="label">英文全称 / Pinyin</span><span class="value">${escapeHtml(merchant.nameEn || '未填')}</span></div>
+        <div class="row"><span class="label">所属行业板块</span><span class="value">${escapeHtml(merchant.category || '综合商业')}</span></div>
+        <div class="row"><span class="label">法定代表 / 负责人</span><span class="value">${escapeHtml(merchant.repName || '未填')}</span></div>
+        <div class="row"><span class="label">联系电话</span><span class="value">${escapeHtml(merchant.phone || '未填')}</span></div>
+        <div class="row"><span class="label">官方联系邮箱</span><span class="value">${escapeHtml(merchant.email || '未填')}</span></div>
+        <div class="row"><span class="label">官方网址</span><span class="value">${escapeHtml(merchant.website || '未填')}</span></div>
+        <div class="row"><span class="label">滑铁卢驻地地址</span><span class="value">${escapeHtml(merchant.address || 'Waterloo, ON')}</span></div>
       </div>
 
       <div class="tagline-box">
         <strong>一句话特色标语：</strong><br>
-        \${merchant.tagline || '专注滑铁卢地区，诚信经营，致力为华商及本地社区提供优质服务。'}
+        ${escapeHtml(merchant.tagline || '专注滑铁卢地区，诚信经营，致力为华商及本地社区提供优质服务。')}
       </div>
 
-      \${merchant.memberPrivilege ? \`
+      ${merchant.memberPrivilege ? `
       <p style="font-size: 12px; color: #cbd5e1; margin: 12px 0 0 0;">
-        <strong>会员专享特权承诺：</strong> \${merchant.memberPrivilege}
-      </p>\` : ''}
+        <strong>会员专享特权承诺：</strong> ${escapeHtml(merchant.memberPrivilege)}
+      </p>` : ''}
 
-      <a href="\${auditUrl}" class="btn">立即前往商会后台审核准入</a>
+      <a href="${auditUrl}" class="btn">立即前往商会后台审核准入</a>
     </div>
     <div class="footer">
-      本邮件由滑铁卢名商会 (WEBA) 数字化中枢自动发送至管理员信箱：\${recipients.join(', ')}<br>
-      © \${new Date().getFullYear()} Waterloo Elite Business Association. All rights reserved.
+      本邮件由滑铁卢创商汇 (WEBA) 数字化中枢自动发送至管理员信箱：${recipients.join(', ')}<br>
+      © ${new Date().getFullYear()} Waterloo Elite Business Association. All rights reserved.
     </div>
   </div>
 </body>
 </html>
     `;
 
-    const text = `【滑铁卢名商会·新商户入驻待审】\\n企业名称：\${merchant.name}\\n行业：\${merchant.category}\\n代表：\${merchant.repName}\\n电话：\${merchant.phone}\\n邮箱：\${merchant.email}\\n网址：\${merchant.website}\\n标语：\${merchant.tagline}\\n请前往商会后台审批：\${auditUrl}`;
+    const text = `【滑铁卢名商会·新商户入驻待审】\n企业名称：${merchant.name}\n行业：${merchant.category}\n代表：${merchant.repName}\n电话：${merchant.phone}\n邮箱：${merchant.email}\n网址：${merchant.website}\n标语：${merchant.tagline}\n请前往商会后台审批：${auditUrl}`;
 
-    const mailtoUrl = `mailto:\${recipients.join(',')}?subject=\${encodeURIComponent(subject)}&body=\${encodeURIComponent(text)}`;
+    const mailtoUrl = `mailto:${recipients.join(',')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
 
     const result = await sendOrLogEmail({
       to: recipients,
@@ -701,7 +719,7 @@ app.post('/api/notifications/merchant-application', async (req, res) => {
       html,
       text,
       type: 'MERCHANT_APPLICATION',
-      title: `新商户入驻待审 - \${merchant.name}`,
+      title: `新商户入驻待审 - ${merchant.name}`,
       snippet,
     });
 
@@ -728,7 +746,17 @@ app.post('/api/notifications/chamber-opportunity', async (req, res) => {
       return res.status(400).json({ error: '互助商机内容不完整' });
     }
 
-    const appUrl = process.env.APP_URL || 'https://waterloobusiness.ca';
+    const origin = req.headers.origin || req.headers.referer;
+    let appUrl = process.env.APP_URL;
+    if (!appUrl && origin) {
+      try {
+        const parsed = new URL(String(origin));
+        appUrl = `${parsed.protocol}//${parsed.host}`;
+      } catch {
+        appUrl = 'https://waterloobusiness.ca';
+      }
+    }
+    if (!appUrl) appUrl = 'https://waterloobusiness.ca';
     const hubUrl = `${appUrl}/#help`;
 
     // Recipient list: Clean merchant emails from request + include admin emails
@@ -742,75 +770,126 @@ app.post('/api/notifications/chamber-opportunity', async (req, res) => {
     // Always include admin emails so admins receive every published opportunity
     const combinedEmails = Array.from(new Set([...targetEmails, ...notificationConfig.adminEmails])).filter(Boolean);
 
-    const subject = `【滑铁卢名商会·商机互助通报】会员发布新商机：「\${post.title}」`;
-    const snippet = `会员企业「\${post.authorCompany || '商会成员'}」发布了新商机需求「\${post.title}」，悬赏 \${post.rewardPoints || 0} 积分，诚邀各会员企业开展业务对接！`;
+    const escapeHtml = (str: string) =>
+      String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
+    const postTitle = post.title || '最新商机合作需求';
+    const authorCompany = post.authorCompany || '商会认证企业';
+    const authorName = post.authorName || '商会实名会员';
+    const category = post.category || '综合商机';
+    const rewardPoints = post.rewardPoints || 0;
+    const contactInfo = post.contactInfo || '请直接在商会平台内信沟通对接';
+
+    // Format description nicely for HTML email
+    const rawDesc = post.description || '暂无详细描述';
+    const formattedDescLines = rawDesc
+      .split('\n')
+      .map((line: string) => escapeHtml(line.trim()))
+      .filter(Boolean)
+      .map((line: string) => `<p style="margin: 0 0 10px 0; line-height: 1.75; font-size: 14px; color: #f1f5f9;">${line}</p>`)
+      .join('');
+
+    const subject = `【滑铁卢创商汇·商机互助通报】会员发布新商机：「${postTitle}」`;
+    const snippet = `会员企业「${authorCompany}」发布了新商机需求「${postTitle}」，悬赏 ${rewardPoints} 积分，诚邀各会员企业开展业务对接！`;
 
     const html = `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${escapeHtml(subject)}</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 24px; }
-    .container { max-width: 620px; margin: 0 auto; background-color: #1e293b; border: 1px solid #38bdf840; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); }
-    .header { background: linear-gradient(135deg, #0369a1 0%, #1e293b 100%); padding: 28px 24px; border-bottom: 2px solid #38bdf8; text-align: center; }
-    .header h1 { margin: 0; font-size: 20px; color: #e0f2fe; letter-spacing: 1px; }
-    .header p { margin: 6px 0 0 0; font-size: 12px; color: #bae6fd; }
-    .content { padding: 28px 24px; }
-    .badge-reward { display: inline-block; background-color: #f59e0b20; color: #fbbf24; border: 1px solid #f59e0b50; padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 16px; }
-    .post-card { background-color: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 20px; margin: 16px 0; }
-    .title { color: #ffffff; font-size: 17px; font-weight: bold; margin-bottom: 8px; }
-    .meta { font-size: 12px; color: #94a3b8; margin-bottom: 14px; }
-    .meta span { color: #38bdf8; font-weight: 600; }
-    .desc { font-size: 13px; color: #cbd5e1; line-height: 1.7; background-color: #1e293b; padding: 14px; border-radius: 8px; border-left: 3px solid #38bdf8; }
-    .btn { display: block; width: 100%; box-sizing: border-box; text-align: center; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; text-decoration: none; padding: 14px 20px; border-radius: 10px; font-weight: bold; font-size: 14px; margin-top: 24px; }
-    .footer { background-color: #0b1120; padding: 16px 24px; text-align: center; font-size: 11px; color: #64748b; border-top: 1px solid #1e293b; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0b1120; color: #f8fafc; margin: 0; padding: 24px; -webkit-font-smoothing: antialiased; }
+    .container { max-width: 640px; margin: 0 auto; background-color: #0f172a; border: 1px solid #0284c750; border-radius: 18px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); }
+    .header { background: linear-gradient(135deg, #0369a1 0%, #0f172a 100%); padding: 32px 28px; border-bottom: 2px solid #38bdf8; text-align: center; }
+    .header h1 { margin: 0; font-size: 22px; color: #f0f9ff; letter-spacing: 0.5px; font-weight: 800; }
+    .header p { margin: 8px 0 0 0; font-size: 13px; color: #bae6fd; letter-spacing: 0.3px; }
+    .content { padding: 32px 28px; }
+    .badges-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .badge-reward { display: inline-block; background-color: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.45); padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: bold; }
+    .badge-cat { display: inline-block; background-color: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+    .post-card { background-color: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 24px; margin: 20px 0; }
+    .title { color: #ffffff; font-size: 19px; font-weight: 800; margin-bottom: 14px; line-height: 1.4; }
+    .meta-box { background-color: #0f172a; border-radius: 10px; padding: 14px 16px; margin-bottom: 18px; border: 1px solid #334155; font-size: 13px; }
+    .meta-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #1e293b; }
+    .meta-item:last-child { border-bottom: none; }
+    .meta-label { color: #94a3b8; }
+    .meta-val { color: #ffffff; font-weight: 600; text-align: right; }
+    .desc-header { font-size: 13px; font-weight: bold; color: #38bdf8; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .desc-box { font-size: 14px; color: #e2e8f0; line-height: 1.8; background-color: #0b1120; padding: 18px; border-radius: 10px; border-left: 4px solid #38bdf8; }
+    .contact-box { background-color: rgba(14, 165, 233, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); padding: 14px 16px; border-radius: 10px; margin-top: 16px; font-size: 13px; }
+    .btn { display: block; width: 100%; box-sizing: border-box; text-align: center; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff !important; text-decoration: none; padding: 16px 24px; border-radius: 12px; font-weight: bold; font-size: 15px; margin-top: 28px; box-shadow: 0 10px 15px -3px rgba(2, 132, 199, 0.4); }
+    .footer { background-color: #070d18; padding: 20px 28px; text-align: center; font-size: 11px; color: #64748b; border-top: 1px solid #1e293b; line-height: 1.6; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>滑铁卢名商会 · 会员商机互助通报</h1>
+      <h1>滑铁卢创商汇 · 会员商机互助通报</h1>
       <p>Waterloo Elite Business Association · Member Opportunity Broadcast</p>
     </div>
     <div class="content">
-      <span class="badge-reward">🪙 专属悬赏奖励：\${post.rewardPoints || 0} 信用积分</span>
-      <div class="post-card">
-        <div class="title">\${post.title}</div>
-        <div class="meta">
-          发布企业：<span>\${post.authorCompany || '商会认证企业'}</span> · 
-          联系人：<span>\${post.authorName || '商会实名会员'}</span> · 
-          所属板块：<span>\${post.category || '综合商机'}</span>
-        </div>
-        <div class="desc">
-          <strong>需求详情：</strong><br>
-          \${post.description}
-        </div>
-        \${post.contactInfo ? \`
-        <p style="font-size: 12px; color: #94a3b8; margin: 12px 0 0 0;">
-          <strong>直接联络方式：</strong> <span style="color: #ffffff;">\${post.contactInfo}</span>
-        </p>\` : ''}
+      <div class="badges-row">
+        <span class="badge-reward">🪙 专属悬赏奖励：${rewardPoints} 信用积分</span>
+        <span class="badge-cat">📁 所属分类：${escapeHtml(category)}</span>
       </div>
 
-      <p style="font-size: 13px; color: #94a3b8; line-height: 1.6; margin: 0;">
-        如果您或您的业务伙伴能够提供对应的解决方案或合作资源，欢迎点击下方按钮前往名商会互助圈直接提交响应，促成合作并赢取悬赏积分！
+      <div class="post-card">
+        <div class="title">${escapeHtml(postTitle)}</div>
+
+        <div class="meta-box">
+          <div class="meta-item">
+            <span class="meta-label">发布企业</span>
+            <span class="meta-val" style="color: #38bdf8;">${escapeHtml(authorCompany)}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">联络人</span>
+            <span class="meta-val">${escapeHtml(authorName)}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">通报派送范围</span>
+            <span class="meta-val">滑铁卢地区全商会认证商企 (${combinedEmails.length} 家)</span>
+          </div>
+        </div>
+
+        <div class="desc-header">📋 商机需求详情</div>
+        <div class="desc-box">
+          ${formattedDescLines}
+        </div>
+
+        <div class="contact-box">
+          <strong style="color: #38bdf8;">📞 合作对接方式：</strong>
+          <span style="color: #ffffff; margin-left: 4px;">${escapeHtml(contactInfo)}</span>
+        </div>
+      </div>
+
+      <p style="font-size: 13px; color: #94a3b8; line-height: 1.7; margin: 0;">
+        如果您或您的企业能够提供相应合作资源或解决方案，请点击下方按钮直接前往创商汇平台响应此商机，促成业务合作并赢取悬赏积分！
       </p>
 
-      <a href="\${hubUrl}" class="btn">前往商机互助圈响应此需求</a>
+      <a href="${hubUrl}" class="btn">🚀 立即前往【商机互助圈】响应对接</a>
     </div>
+
     <div class="footer">
-      本邮件由滑铁卢名商会数字化系统向商会全体会员企业（共 \${combinedEmails.length} 家商户）通报发布。<br>
-      © \${new Date().getFullYear()} Waterloo Elite Business Association. All rights reserved.
+      本邮件由滑铁卢创商汇 (WEBA) 数字化中枢向商会全体会员商企自动派发。<br>
+      为了保护每位会员的商业隐私，所有商户邮箱均已采用密送 (BCC) 保护。<br>
+      © ${new Date().getFullYear()} Waterloo Elite Business Association. All rights reserved.
     </div>
   </div>
 </body>
 </html>
     `;
 
-    const text = `【滑铁卢名商会·商机互助通报】\\n新商机：「\${post.title}」\\n发布企业：\${post.authorCompany} (\${post.authorName})\\n分类：\${post.category}\\n悬赏积分：\${post.rewardPoints} 分\\n详情：\${post.description}\\n联系方式：\${post.contactInfo || '请在商会平台内信沟通'}\\n立即前往互助圈响应：\${hubUrl}`;
+    const text = `【滑铁卢创商汇·商机互助通报】\n\n新商机：「${postTitle}」\n发布企业：${authorCompany} (${authorName})\n分类：${category}\n悬赏积分：${rewardPoints} 分\n\n【需求详情】：\n${rawDesc}\n\n【对接联络方式】：\n${contactInfo}\n\n立即前往互助圈响应：${hubUrl}`;
 
     // For mass mail, use BCC to protect all merchant email privacy!
-    const mailtoUrl = `mailto:?bcc=\${encodeURIComponent(combinedEmails.join(','))}&subject=\${encodeURIComponent(subject)}&body=\${encodeURIComponent(text)}`;
+    const mailtoUrl = `mailto:?bcc=${encodeURIComponent(combinedEmails.join(','))}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
 
     const result = await sendOrLogEmail({
       to: [notificationConfig.adminEmails[0]],
@@ -819,7 +898,7 @@ app.post('/api/notifications/chamber-opportunity', async (req, res) => {
       html,
       text,
       type: 'CHAMBER_OPPORTUNITY',
-      title: `全商会商机互助通告 - \${post.title}`,
+      title: `全商会商机互助通告 - ${postTitle}`,
       snippet,
     });
 
@@ -839,7 +918,131 @@ app.post('/api/notifications/chamber-opportunity', async (req, res) => {
   }
 });
 
-// 4e. Get Outbox Logs
+// 4e. External Opportunity Pending Admin Audit Notification Route
+app.post('/api/notifications/opportunity-pending-admin', async (req, res) => {
+  try {
+    const { post } = req.body;
+    if (!post || !post.title) {
+      return res.status(400).json({ error: '商机信息不完整' });
+    }
+
+    const origin = req.headers.origin || req.headers.referer;
+    let appUrl = process.env.APP_URL;
+    if (!appUrl && origin) {
+      try {
+        const parsed = new URL(String(origin));
+        appUrl = `${parsed.protocol}//${parsed.host}`;
+      } catch {
+        appUrl = 'https://waterloobusiness.ca';
+      }
+    }
+    if (!appUrl) appUrl = 'https://waterloobusiness.ca';
+    const auditUrl = `${appUrl}/#help`;
+    const recipients = notificationConfig.adminEmails;
+
+    const escapeHtml = (str: string) =>
+      String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
+    const postTitle = post.title || '外部客户合作需求';
+    const authorName = post.authorName || '外部潜在客户';
+    const authorCompany = post.authorCompany || '未提供企业名';
+    const contactInfo = post.contactInfo || `${post.authorPhone || ''} ${post.authorEmail || ''}`.trim() || '未填';
+
+    const subject = `【滑铁卢创商汇】外部潜在客户商机待审提醒: 「${postTitle}」`;
+    const snippet = `外部客户「${authorName}」(${authorCompany}) 提交了新合作需求「${postTitle}」，需秘书处审核后方可全员群发。`;
+
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0b1120; color: #f8fafc; margin: 0; padding: 24px; }
+    .container { max-width: 620px; margin: 0 auto; background-color: #0f172a; border: 1px solid #f59e0b50; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); }
+    .header { background: linear-gradient(135deg, #78350f 0%, #0f172a 100%); padding: 28px 24px; border-bottom: 2px solid #f59e0b; text-align: center; }
+    .header h1 { margin: 0; font-size: 20px; color: #fef3c7; letter-spacing: 0.5px; }
+    .header p { margin: 6px 0 0 0; font-size: 12px; color: #cbd5e1; }
+    .content { padding: 28px 24px; }
+    .badge { display: inline-block; background-color: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.5); padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 16px; }
+    .card { background-color: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; margin: 16px 0; }
+    .row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid #0f172a; font-size: 13px; }
+    .row:last-child { border-bottom: none; }
+    .label { color: #94a3b8; }
+    .val { color: #ffffff; font-weight: 600; text-align: right; }
+    .desc-box { background-color: #0b1120; padding: 14px; border-radius: 8px; border-left: 3px solid #f59e0b; margin-top: 14px; font-size: 13px; color: #e2e8f0; line-height: 1.6; }
+    .btn { display: block; width: 100%; box-sizing: border-box; text-align: center; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #0f172a !important; text-decoration: none; padding: 14px 20px; border-radius: 10px; font-weight: bold; font-size: 14px; margin-top: 24px; }
+    .footer { background-color: #070d18; padding: 16px 24px; text-align: center; font-size: 11px; color: #64748b; border-top: 1px solid #1e293b; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>滑铁卢创商汇 · 外部商机待审提醒</h1>
+      <p>Waterloo Elite Business Association · External Opportunity Audit Alert</p>
+    </div>
+    <div class="content">
+      <span class="badge">🔔 待秘书处核验 (Pending Secretary Audit)</span>
+      <h2 style="margin: 0 0 8px 0; color: #ffffff; font-size: 18px;">有外部潜在客户发布合作商机</h2>
+      <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; margin: 0 0 16px 0;">
+        尊贵的商会管理员，有外部客户在平台上提交了商机需求。为了保护商会企业免受垃圾广告骚扰，系统<strong>已暂缓全员邮件广播</strong>，请您核验后在后台点击【审核通过并全员广播】。
+      </p>
+
+      <div class="card">
+        <div class="row"><span class="label">商机标题</span><span class="val" style="color: #fde68a;">${escapeHtml(postTitle)}</span></div>
+        <div class="row"><span class="label">需求类别</span><span class="val">${escapeHtml(post.category || '综合合作')}</span></div>
+        <div class="row"><span class="label">外部客户姓名</span><span class="val">${escapeHtml(authorName)}</span></div>
+        <div class="row"><span class="label">所属单位/公司</span><span class="val">${escapeHtml(authorCompany)}</span></div>
+        <div class="row"><span class="label">客户联系方式</span><span class="val">${escapeHtml(contactInfo)}</span></div>
+        <div class="row"><span class="label">悬赏/激励积分</span><span class="val">${post.rewardPoints || 0} 积分</span></div>
+
+        <div class="desc-box">
+          <strong>需求详情描述：</strong><br>
+          ${escapeHtml(post.description || '暂无描述')}
+        </div>
+      </div>
+
+      <a href="${auditUrl}" class="btn">立即前往商机互助圈审核并群发</a>
+    </div>
+    <div class="footer">
+      本邮件由滑铁卢创商汇 (WEBA) 数字化中枢向管理员信箱发送：${recipients.join(', ')}<br>
+      © ${new Date().getFullYear()} Waterloo Elite Business Association. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
+    `;
+
+    const text = `【滑铁卢创商汇·外部商机待审】\n外部客户：${authorName} (${authorCompany})\n标题：${postTitle}\n联系方式：${contactInfo}\n详情：${post.description}\n请登录商会后台审核：${auditUrl}`;
+
+    const result = await sendOrLogEmail({
+      to: recipients,
+      subject,
+      html,
+      text,
+      type: 'CHAMBER_OPPORTUNITY',
+      title: `外部商机待审 - ${postTitle}`,
+      snippet,
+    });
+
+    return res.json({
+      success: true,
+      recipients,
+      subject,
+      deliveryStatus: result.status,
+      logId: result.id,
+    });
+  } catch (err: any) {
+    console.error('Error notifying admins of pending opportunity:', err);
+    return res.status(500).json({ error: '待审通知派发失败' });
+  }
+});
+
+// 4f. Get Outbox Logs
 app.get('/api/notifications/logs', (_req, res) => {
   res.json({ success: true, logs: emailLogs });
 });

@@ -164,3 +164,23 @@ export async function testSmtpConnection(targetEmail?: string): Promise<{
   }
 }
 
+// 8. Notify Admins on External Prospect Opportunity Submission
+export async function sendOpportunityPendingAdminNotification(post: HelpPost): Promise<{
+  success: boolean;
+  message?: string;
+  error?: string;
+}> {
+  try {
+    const res = await fetch('/api/notifications/opportunity-pending-admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ post }),
+    });
+    return await res.json();
+  } catch (err: any) {
+    console.error('Failed to notify admin of pending opportunity:', err);
+    return { success: false, error: err?.message || '网络通信异常' };
+  }
+}
+
+

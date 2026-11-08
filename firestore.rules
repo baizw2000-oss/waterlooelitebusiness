@@ -60,5 +60,10 @@ service cloud.firestore {
     match /system_config/{configId} {
       allow read, write: if true;
     }
+
+    // 9. Member Credentials & Passwords
+    match /member_credentials/{credId} {
+      allow read, write: if isValidId(credId);
+    }
   }
 }

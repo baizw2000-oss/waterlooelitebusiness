@@ -16,6 +16,7 @@ import {
   CalendarCheck
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { UserAvatar } from './UserAvatar';
 
 interface PointsCenterProps {
   userPoints: number;
@@ -333,7 +334,7 @@ export const PointsCenter: React.FC<PointsCenterProps> = ({
                   >
                     {user.rank}
                   </div>
-                  <div className="text-xl">{user.avatar}</div>
+                  <UserAvatar avatar={user.avatar} name={user.name} size="sm" className="w-7 h-7 rounded-full" />
                   <div>
                     <div className="font-bold text-white flex items-center gap-1.5">
                       {user.name}
