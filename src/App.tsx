@@ -178,6 +178,41 @@ export default function App() {
     };
   }, []);
 
+  // SEO & Deep-linking: Parse ?merchant=ID from URL on load
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const merchantId = params.get('merchant');
+      if (merchantId && merchants.length > 0) {
+        const found = merchants.find((m) => String(m.id) === String(merchantId));
+        if (found) {
+          setSelectedMerchantForDetail(found);
+          document.title = `${found.name} (${found.category}) | 滑铁卢名商会企业认证档案`;
+        }
+      }
+    } catch (e) {}
+  }, [merchants]);
+
+  // Sync document title and canonical URL parameter when merchant modal opens/closes
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const url = new URL(window.location.href);
+      if (selectedMerchantForDetail) {
+        document.title = `${selectedMerchantForDetail.name} (${selectedMerchantForDetail.category}) | 滑铁卢名商会企业认证档案`;
+        url.searchParams.set('merchant', String(selectedMerchantForDetail.id));
+        window.history.replaceState({}, '', url.toString());
+      } else {
+        document.title = 'Waterloo Elite Business Association | 滑铁卢名商会';
+        if (url.searchParams.has('merchant')) {
+          url.searchParams.delete('merchant');
+          window.history.replaceState({}, '', url.toString());
+        }
+      }
+    } catch (e) {}
+  }, [selectedMerchantForDetail]);
+
   // 2. Daily Check-in Handler
   const handleCheckIn = () => {
     if (user.hasCheckedInToday) return;

@@ -12,6 +12,56 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Schema.org JSON-LD Structured Data for Google SEO & AI Knowledge Graph (GEO/AEO) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "NGO",
+          "@id": "https://waterloobusiness.ca/#organization",
+          "name": "滑铁卢名商会 Waterloo Elite Business Association",
+          "alternateName": "WEBA",
+          "url": "https://waterloobusiness.ca",
+          "description": "滑铁卢名商会（WEBA）是扎根加拿大安大略省滑铁卢高科技走廊与商业腹地的非营利华商联合组织，汇聚科技研发、金融投资、财税法务、跨境物流与实体商业精英企业，提供权威实名商录背书、商机撮合与企业公信力评价。",
+          "areaServed": {
+            "@type": "AdministrativeArea",
+            "name": "Waterloo Region, Ontario, Canada"
+          },
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Waterloo",
+            "addressRegion": "ON",
+            "addressCountry": "CA"
+          },
+          "knowsAbout": [
+            "Local Business Directory",
+            "Waterloo Enterprise Networking",
+            "Financial & Investment Advisory",
+            "Cross-border Logistics & Warehousing",
+            "High-tech Innovation Hub",
+            "Commercial Real Estate",
+            "Legal & Tax Consulting"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://waterloobusiness.ca/#website",
+          "url": "https://waterloobusiness.ca",
+          "name": "滑铁卢名商会官方平台",
+          "publisher": {
+            "@id": "https://waterloobusiness.ca/#organization"
+          },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://waterloobusiness.ca/?search={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        }
+      ]
+    }
+    </script>
   </head>
   <body class="bg-slate-950 text-slate-100 antialiased selection:bg-amber-500/30 selection:text-amber-200">
     <div id="root"></div>

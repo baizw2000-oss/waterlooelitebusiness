@@ -41,9 +41,12 @@ export const MerchantDetailModal: React.FC<MerchantDetailModalProps> = ({
   if (!merchant) return null;
 
   const handleCopyLink = () => {
-    navigator.clipboard?.writeText(window.location.href);
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+    const shareUrl = `${origin}${pathname}?merchant=${merchant.id}`;
+    navigator.clipboard?.writeText(shareUrl);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), 2500);
   };
 
   const handleSendDirectMsg = (e: React.FormEvent) => {
