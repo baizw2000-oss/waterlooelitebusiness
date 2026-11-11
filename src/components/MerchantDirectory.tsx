@@ -43,7 +43,9 @@ import {
   Server,
   Database,
   CheckCircle,
-  HelpCircle
+  HelpCircle,
+  Share2,
+  Copy
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { 
@@ -149,13 +151,14 @@ export const MerchantDirectory: React.FC<MerchantDirectoryProps> = ({
   const [smtpPort, setSmtpPort] = useState<number>(465);
   const [smtpUser, setSmtpUser] = useState('');
   const [smtpPass, setSmtpPass] = useState('');
-  const [smtpFrom, setSmtpFrom] = useState('WEBA 滑铁卢名商会秘书处 <weba.chamber@gmail.com>');
+  const [smtpFrom, setSmtpFrom] = useState('WBCA 滑铁卢融商汇秘书处 <weba.chamber@gmail.com>');
   const [hasSmtpPass, setHasSmtpPass] = useState(false);
   const [isSmtpConfigured, setIsSmtpConfigured] = useState(false);
   const [savingSmtp, setSavingSmtp] = useState(false);
   const [testingSmtp, setTestingSmtp] = useState(false);
   const [showSmtpPass, setShowSmtpPass] = useState(false);
   const [smtpTestResult, setSmtpTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [copiedMerchantId, setCopiedMerchantId] = useState<string | number | null>(null);
 
 
   // New Merchant Form State (website defaults to blank)
@@ -298,7 +301,7 @@ export const MerchantDirectory: React.FC<MerchantDirectoryProps> = ({
       tier: '认证商户',
       entityType: newEntityType,
       logo: newLogo.trim() || (newEntityType === 'individual' ? '👤' : '🏢'),
-      tagline: newTagline.trim() || '滑铁卢名商会认证新晋会员单位',
+      tagline: newTagline.trim() || '滑铁卢融商汇认证新晋会员单位',
       description: newDescription.trim() || '扎根滑铁卢地区，诚信经营，致力为本地社区及华商业界提供高品质专业服务。',
       repName: newRepName.trim(),
       repTitle: newEntityType === 'individual' ? '专业顾问 / 执业经纪' : '负责人 / 代表',
@@ -312,7 +315,7 @@ export const MerchantDirectory: React.FC<MerchantDirectoryProps> = ({
       credibilityScore: 92,
       tags: parsedTags,
       services: parsedServices,
-      memberPrivilege: newPrivilege.trim() || '为滑铁卢名商会会员提供专属9折会友优惠及优先接待服务。',
+      memberPrivilege: newPrivilege.trim() || '为滑铁卢融商汇会员提供专属9折会友优惠及优先接待服务。',
       verified: false,
       featured: false,
       auditStatus: 'PENDING_APPROVAL',
@@ -661,7 +664,7 @@ export const MerchantDirectory: React.FC<MerchantDirectoryProps> = ({
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
             <Building2 className="w-6 h-6 text-amber-400" />
-            滑铁卢名商会员名录
+            滑铁卢融商汇企业名录
           </h2>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
             严谨认证 · 覆盖滑铁卢（K-W-C）及大多伦多走廊的核心产业领军商企
@@ -1136,7 +1139,7 @@ export const MerchantDirectory: React.FC<MerchantDirectoryProps> = ({
                 ) : (
                   /* Standard Live Merchants */
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center justify-between gap-1.5">
                       <button
                         onClick={() => onSelectMerchant(merchant)}
                         className="flex-1 py-1.5 px-2 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-lg text-xs font-semibold transition-colors"
@@ -1146,11 +1149,35 @@ export const MerchantDirectory: React.FC<MerchantDirectoryProps> = ({
 
                       <button
                         onClick={() => onOpenAIReputation(merchant)}
-                        className="py-1.5 px-2.5 bg-gradient-to-r from-cyan-600/20 to-blue-600/20 hover:from-cyan-600/40 hover:to-blue-600/40 border border-cyan-400/40 text-cyan-200 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all"
+                        className="py-1.5 px-2 bg-gradient-to-r from-cyan-600/20 to-blue-600/20 hover:from-cyan-600/40 hover:to-blue-600/40 border border-cyan-400/40 text-cyan-200 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all"
                         title="生成Gemini AI多维商誉与舆情诊断"
                       >
                         <Sparkles className="w-3 h-3 text-cyan-300" />
-                        AI信誉诊断
+                        <span className="hidden sm:inline">AI诊断</span>
+                      </button>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const origin = typeof window !== 'undefined' ? window.location.origin : '';
+                          const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+                          const shareUrl = `${origin}${pathname}?merchant=${merchant.id}`;
+                          navigator.clipboard?.writeText(shareUrl);
+                          setCopiedMerchantId(merchant.id);
+                          setTimeout(() => setCopiedMerchantId(null), 2000);
+                        }}
+                        className={`p-1.5 rounded-lg border text-xs transition-all flex items-center justify-center flex-shrink-0 ${
+                          copiedMerchantId === merchant.id
+                            ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300'
+                            : 'bg-slate-800 hover:bg-cyan-950/60 border-slate-700 hover:border-cyan-500/40 text-slate-400 hover:text-cyan-300'
+                        }`}
+                        title={`复制该商企专属直达链接 (?merchant=${merchant.id})`}
+                      >
+                        {copiedMerchantId === merchant.id ? (
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                        ) : (
+                          <Share2 className="w-3.5 h-3.5" />
+                        )}
                       </button>
                     </div>
 
@@ -2181,7 +2208,7 @@ export const MerchantDirectory: React.FC<MerchantDirectoryProps> = ({
                       type="text"
                       value={smtpFrom}
                       onChange={(e) => setSmtpFrom(e.target.value)}
-                      placeholder="如 WEBA 滑铁卢名商会秘书处 <weba.chamber@gmail.com>"
+                      placeholder="如 WBCA 滑铁卢融商汇秘书处 <weba.chamber@gmail.com>"
                       className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 text-xs"
                     />
                   </div>
@@ -2263,7 +2290,7 @@ export const MerchantDirectory: React.FC<MerchantDirectoryProps> = ({
                   <ol className="list-decimal list-inside space-y-1 text-slate-400 pl-1">
                     <li>访问您的 Google 账号设置中心 (<code>myaccount.google.com</code>) 并开启【两步验证】。</li>
                     <li>在搜索框搜索并进入【应用专用密码 (App Passwords)】。</li>
-                    <li>应用名称输入「滑铁卢名商会」，系统将生成 16 位专属密码（如 <code>abcd efgh ijkl mnop</code>）。</li>
+                    <li>应用名称输入「滑铁卢融商汇」，系统将生成 16 位专属密码（如 <code>abcd efgh ijkl mnop</code>）。</li>
                     <li>将发信账号填入上方，粘贴 16 位密码，点击「保存配置至中央云端数据库」即可！</li>
                   </ol>
                 </div>
@@ -2346,7 +2373,7 @@ export const MerchantDirectory: React.FC<MerchantDirectoryProps> = ({
                       .map((m) => m.email)
                       .filter(Boolean)
                       .join(',')}&subject=${encodeURIComponent(
-                      '【滑铁卢名商会】商机互助直达通报'
+                      '【滑铁卢融商汇】商机互助直达通报'
                     )}`}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/20 hover:bg-sky-500/30 border border-sky-500/40 text-sky-300 rounded-xl text-xs font-semibold self-start sm:self-auto"
                     title="在本地默认邮件客户端中打开群发窗口"
@@ -2464,7 +2491,7 @@ export const MerchantDirectory: React.FC<MerchantDirectoryProps> = ({
           <div className="bg-slate-900 border border-amber-500/40 rounded-3xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
             <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950">
               <div>
-                <h4 className="text-sm font-bold text-white">邮件原文预览 (WEBA HTML Template)</h4>
+                <h4 className="text-sm font-bold text-white">邮件原文预览 (WBCA HTML Template)</h4>
                 <p className="text-[11px] text-slate-400">{emailPreviewItem.subject}</p>
               </div>
               <button

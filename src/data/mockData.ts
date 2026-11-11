@@ -13,17 +13,17 @@ export const INITIAL_EVENTS: ChamberEvent[] = [];
 export const INITIAL_REWARD_ITEMS: RewardItem[] = [
   {
     id: 1,
-    title: '滑铁卢名商峰会 VIP 首排入席资格',
+    title: '滑铁卢融商峰会 VIP 首排入席资格',
     category: '高层社交',
     pointsCost: 500,
     stock: 20,
-    description: '尊享名商峰会前排嘉宾贵宾席位、专属迎宾签到与大会名录特别鸣谢致辞。',
+    description: '尊享融商峰会前排嘉宾贵宾席位、专属迎宾签到与大会名录特别鸣谢致辞。',
     validPeriod: '长期有效 · 峰会举办前兑换',
     iconName: 'Award'
   },
   {
     id: 2,
-    title: '名商会官方网站 / App 黄金首页展位 (1周)',
+    title: '融商汇官方网站 / App 黄金首页展位 (1周)',
     category: '商机推广',
     pointsCost: 800,
     stock: 5,
@@ -33,7 +33,7 @@ export const INITIAL_REWARD_ITEMS: RewardItem[] = [
   },
   {
     id: 3,
-    title: '名商企业家内刊《滑铁卢商业周评》深度专访',
+    title: '融商企业家内刊《滑铁卢商业周评》深度专访',
     category: '媒体权益',
     pointsCost: 1500,
     stock: 3,

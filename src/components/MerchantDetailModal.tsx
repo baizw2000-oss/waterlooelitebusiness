@@ -13,6 +13,7 @@ import {
   CheckCircle2, 
   Send, 
   Share2, 
+  Copy,
   MessageSquareQuote,
   ExternalLink,
   Building2,
@@ -67,7 +68,7 @@ export const MerchantDetailModal: React.FC<MerchantDetailModalProps> = ({
         <div className="sticky top-0 z-10 bg-slate-900/95 backdrop-blur-md px-6 py-4 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">
-              商会认证商户档案
+              融商汇认证商企档案
             </span>
             <span className="text-slate-600">·</span>
             <span className="text-xs text-slate-400">{merchant.category}</span>
@@ -76,10 +77,15 @@ export const MerchantDetailModal: React.FC<MerchantDetailModalProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={handleCopyLink}
-              className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
-              title="分享此商户"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all ${
+                copied
+                  ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300'
+                  : 'bg-cyan-500/15 border-cyan-400/40 text-cyan-300 hover:bg-cyan-500/25'
+              }`}
+              title="复制商户专属名片直达链接 (?merchant=ID)"
             >
-              <Share2 className="w-4 h-4" />
+              {copied ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Share2 className="w-3.5 h-3.5" />}
+              <span>{copied ? '已复制直达链接' : '分享直达链接'}</span>
             </button>
             <button
               onClick={onClose}
@@ -139,12 +145,60 @@ export const MerchantDetailModal: React.FC<MerchantDetailModalProps> = ({
             </div>
           </div>
 
+          {/* Exclusive Deep-Link & SEO Indexing Showcase Box */}
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-br from-cyan-950/40 via-slate-900 to-slate-950 border border-cyan-500/30 space-y-2.5 shadow-lg">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="flex h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
+                <span className="text-xs font-bold text-cyan-300 flex items-center gap-1.5">
+                  商户专属独立直达链接
+                  <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-200 border border-cyan-500/40">
+                    ?merchant={merchant.id}
+                  </span>
+                </span>
+              </div>
+              <span className="text-[10px] text-cyan-300/80 font-medium">
+                Google/AI 专属索引优化 · 外部秒通
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="flex-1 bg-slate-950/90 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-cyan-200 truncate select-all">
+                {typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}?merchant=${merchant.id}` : `?merchant=${merchant.id}`}
+              </div>
+              <button
+                onClick={handleCopyLink}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all flex-shrink-0 ${
+                  copied
+                    ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
+                    : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-md shadow-cyan-500/20'
+                }`}
+              >
+                {copied ? (
+                  <>
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>已复制链接</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>复制直达链接</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              💡 <strong>使用场景</strong>：外部客户、微信好友或商业邮件点击此独立链接，将绕过首页和列表，<strong>秒级直达此商户的公信档案与预约对接窗口</strong>；同时作为 Google 及 AI 爬虫抓取的独立固定永久索引。
+            </p>
+          </div>
+
           {/* Delisted / Suspended Warning Banner */}
           {(merchant.isDelisted || merchant.auditStatus === 'SUSPENDED') && (
             <div className="p-3.5 rounded-2xl bg-rose-950/70 border border-rose-500/50 text-xs text-rose-200 flex items-start gap-2.5">
               <span className="text-base">⚠️</span>
               <div>
-                <span className="font-bold text-rose-300">商会公信风控警示：该商企已被商会下架屏蔽</span>
+                <span className="font-bold text-rose-300">融商汇公信风控警示：该商企已被商会下架屏蔽</span>
                 <p className="text-[11px] text-rose-200/90 mt-0.5">
                   原因备案：{merchant.delistReason || '存在严重会员投诉或失信舆情，经商会秘书处核实暂予下架公示'}
                 </p>
@@ -162,7 +216,7 @@ export const MerchantDetailModal: React.FC<MerchantDetailModalProps> = ({
             <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-amber-600/10 to-amber-500/5 border border-amber-500/40 space-y-1">
               <div className="flex items-center gap-2 text-xs font-bold text-amber-300">
                 <Award className="w-4 h-4 text-amber-400" />
-                滑铁卢名商会 会员专享尊享特权
+                滑铁卢融商汇 会员专享尊享特权
               </div>
               <p className="text-xs text-slate-200 leading-relaxed pl-6">
                 {merchant.memberPrivilege}
@@ -326,7 +380,7 @@ export const MerchantDetailModal: React.FC<MerchantDetailModalProps> = ({
 
               {msgSent ? (
                 <div className="p-3 rounded-xl bg-emerald-500/20 text-emerald-300 text-xs text-center font-semibold">
-                  ✓ 内信已通过名商会通道加密发送，负责人将通过注册邮箱和商会App即时提醒！
+                  ✓ 内信已通过融商汇通道加密发送，负责人将通过注册邮箱和商会App即时提醒！
                 </div>
               ) : (
                 <>
@@ -335,7 +389,7 @@ export const MerchantDetailModal: React.FC<MerchantDetailModalProps> = ({
                     required
                     value={directMsg}
                     onChange={(e) => setDirectMsg(e.target.value)}
-                    placeholder={`您好 ${merchant.repName}，我是名商会会员，希望就以下事项与贵司沟通探讨...`}
+                    placeholder={`您好 ${merchant.repName}，我是融商汇会员，希望就以下事项与贵司沟通探讨...`}
                     className="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
                   />
                   <div className="flex justify-end">

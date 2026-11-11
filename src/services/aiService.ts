@@ -54,8 +54,8 @@ export async function fetchMerchantReputationAnalysis(merchant: {
         mentionFrequency: '月度检索活跃度 150+ 次',
       },
       actionableRecommendations: [
-        '接入名商会实时在线签约与积分互保体系',
-        '主动展示滑铁卢名商会实名认证数字公信徽章',
+        '接入融商汇实时在线签约与积分互保体系',
+        '主动展示滑铁卢融商汇实名认证数字公信徽章',
         '定期在互助圈发布行业洞察，扩大B端影响力',
       ],
       source: 'offline-graceful-fallback',
@@ -89,7 +89,7 @@ export async function fetchSmartMatch(params: {
       matchRationale: `根据您在滑铁卢地区的业务需求「${params.needDescription}」，AI商机匹配引擎从商会认证名录中筛选出最契合的骨干会员，具备极高技术成熟度与本地商誉积淀。`,
       recommendedMemberIds: [1, 2],
       suggestedNextSteps: [
-        '通过名商会内信直接向该企业负责人发送合作意向',
+        '通过融商汇内信直接向该企业负责人发送合作意向',
         '在商会下次线下私董会上现场交流',
         '可申请商会秘书处协助进行三方商信公证',
       ],

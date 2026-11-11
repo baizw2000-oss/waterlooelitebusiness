@@ -400,7 +400,7 @@ export const UserProfileCenter: React.FC<UserProfileCenterProps> = ({
       {activeSubTab === 'events' && (
         <div className="space-y-4">
           <div className="text-xs text-slate-400">
-            您已报名的滑铁卢名商会高端峰会、私董会及交流酒会：
+            您已报名的滑铁卢融商汇高端峰会、私董会及交流酒会：
           </div>
 
           {myEvents.length === 0 ? (
@@ -467,7 +467,7 @@ export const UserProfileCenter: React.FC<UserProfileCenterProps> = ({
               <div>
                 <h4 className="text-base font-bold text-white">信用积分成长总览</h4>
                 <p className="text-xs text-slate-400">
-                  真实记录您在滑铁卢名商会社区的商业履约与互助贡献
+                  真实记录您在滑铁卢融商会社区的商业履约与互助贡献
                 </p>
               </div>
               <div className="text-right">
@@ -544,11 +544,11 @@ export const UserProfileCenter: React.FC<UserProfileCenterProps> = ({
             <div className="flex items-center justify-between border-b border-amber-500/30 pb-4">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center font-serif text-slate-950 font-bold">
-                  商
+                  融
                 </div>
                 <div className="text-left">
-                  <div className="text-xs font-bold text-white">滑铁卢名商会</div>
-                  <div className="text-[9px] text-amber-400/80 uppercase">Waterloo Elite Business Association</div>
+                  <div className="text-xs font-bold text-white">滑铁卢融商汇</div>
+                  <div className="text-[9px] text-amber-400/80 uppercase">Waterloo Business Convergence Alliance</div>
                 </div>
               </div>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">
@@ -587,7 +587,7 @@ export const UserProfileCenter: React.FC<UserProfileCenterProps> = ({
             </div>
 
             <div className="border-t border-slate-800 pt-3 text-[10px] text-slate-400 font-mono">
-              认证公信号: WEBA-MBR-2026-8809 · 永久保全
+              认证公信号: WBCA-MBR-2026-8809 · 永久保全
             </div>
           </div>
         </div>

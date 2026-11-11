@@ -53,7 +53,7 @@ export const BrandHero: React.FC<BrandHeroProps> = ({
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/15 border border-amber-400/30 backdrop-blur-md">
             <span className="flex h-2 w-2 rounded-full bg-amber-400 animate-ping" />
             <span className="text-xs font-semibold text-amber-300 tracking-wide uppercase">
-              Waterloo Elite Business Association · 滑铁卢名商会
+              Waterloo Business Convergence Alliance · 滑铁卢融商汇
             </span>
           </div>
 
@@ -62,11 +62,11 @@ export const BrandHero: React.FC<BrandHeroProps> = ({
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
               智汇滑铁卢 · 商道融天下 <br className="hidden sm:inline" />
               <span className="bg-gradient-to-r from-amber-300 via-amber-200 to-amber-500 bg-clip-text text-transparent">
-                互助铸商誉 · 协同赢未来
+                融商聚势 · 协同赢未来
               </span>
             </h1>
             <p className="text-sm sm:text-base lg:text-lg text-slate-300 max-w-2xl font-normal leading-relaxed pt-2">
-              根植安省滑铁卢高科技走廊与商业腹地，汇聚科技、财税法务、商业地产、跨境实业与高教精英。以非营利之初心理念，构建集「可信商户名录」、「商机供需互助」、「公信力AI评价」与「专属信用积分」为一体的会员赋能数字枢纽。
+              根植安省滑铁卢高科技走廊与商业腹地，汇聚科技、产融投资、财税法务、跨境实业与高教精英。以产融互促、商道共融之初心理念，构建集「可信商户名录」、「商机供需互助」、「公信力AI评价」与「专属信用积分」为一体的会员赋能数字枢纽。
             </p>
           </div>
 
@@ -125,13 +125,13 @@ export const BrandHero: React.FC<BrandHeroProps> = ({
         </div>
       </section>
 
-      {/* 2. Four Core Pillars of WEBA */}
+      {/* 2. Four Core Pillars of WBCA */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
               <ShieldCheck className="w-6 h-6 text-amber-400" />
-              滑铁卢名商会 四大核心赋能支柱
+              滑铁卢融商汇 四大核心赋能支柱
             </h2>
             <p className="text-xs sm:text-sm text-slate-400 mt-1">
               以科技与信誉为双轮驱动，构建真正产生商业价值的本地非营利华商生态

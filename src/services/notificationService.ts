@@ -91,7 +91,7 @@ export async function fetchNotificationConfig(): Promise<NotificationConfigRespo
     return {
       adminEmails: ['baizw2000@gmail.com'],
       isSmtpConfigured: false,
-      smtpFrom: 'WEBA 滑铁卢名商会秘书处 <weba.chamber@gmail.com>',
+      smtpFrom: 'WBCA 滑铁卢融商汇秘书处 <weba.chamber@gmail.com>',
     };
   }
 }

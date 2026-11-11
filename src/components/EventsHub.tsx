@@ -162,7 +162,7 @@ export const EventsHub: React.FC<EventsHubProps> = ({
           avatar: matched.logo || '🏢',
           tier: matched.tier || '认证商户',
           industry: matched.category,
-          bio: matched.description || matched.tagline || '滑铁卢名商会实名认证企业会员',
+          bio: matched.description || matched.tagline || '滑铁卢融商汇实名认证企业会员',
           isMember: true,
           merchantId: matched.id,
           joinedDate: '商会实名认证会员',
@@ -180,7 +180,7 @@ export const EventsHub: React.FC<EventsHubProps> = ({
         }, 1000);
       } else {
         setGateError(
-          `未在商会已审核的名商名录中检索到邮箱「${cleanEmail}」。请确认是否为入会申请登记的企业邮箱，或点击下方【申请加入滑铁卢名商会】。`
+          `未在商会已审核的名商名录中检索到邮箱「${cleanEmail}」。请确认是否为入会申请登记的企业邮箱，或点击下方【申请加入滑铁卢融商汇】。`
         );
       }
     }, 400);
@@ -218,7 +218,7 @@ export const EventsHub: React.FC<EventsHubProps> = ({
           avatar: matched.logo || '🏢',
           tier: matched.tier || '认证商户',
           industry: matched.category,
-          bio: matched.description || matched.tagline || '滑铁卢名商会实名认证企业会员',
+          bio: matched.description || matched.tagline || '滑铁卢融商汇实名认证企业会员',
           isMember: true,
           merchantId: matched.id,
           joinedDate: 'Google 快捷认证会员',
@@ -391,7 +391,7 @@ export const EventsHub: React.FC<EventsHubProps> = ({
       description: newDesc.trim(),
       organizerUid: user?.uid,
       organizerName: user?.name,
-      organizerCompany: user?.company || '名商会认证企业',
+      organizerCompany: user?.company || '融商汇认证企业',
       targetAudience: newTargetAudience,
       createdAt: new Date().toISOString(),
       agenda: [
@@ -460,7 +460,7 @@ export const EventsHub: React.FC<EventsHubProps> = ({
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
             <Calendar className="w-6 h-6 text-amber-400" />
-            滑铁卢名商会 品牌活动与闭门私董
+            滑铁卢融商汇 品牌活动与闭门私董
           </h2>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
             高端峰会 · 私董沙龙 · 投融资对接 · 认证会员可自主发起 · 扫码签到享积分确权
@@ -577,7 +577,7 @@ export const EventsHub: React.FC<EventsHubProps> = ({
                     <span className="text-slate-400">主办发起：</span>
                     <span className="font-semibold text-amber-300 flex items-center gap-1 truncate">
                       <Building2 className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-                      {evt.organizerCompany || '滑铁卢名商会官方'}
+                      {evt.organizerCompany || '滑铁卢融商汇官方'}
                     </span>
                   </div>
 
@@ -718,7 +718,7 @@ export const EventsHub: React.FC<EventsHubProps> = ({
                   发起商会活动 · 会员身份前置核验
                 </h3>
                 <p className="text-xs text-slate-400 leading-relaxed max-w-sm mx-auto">
-                  滑铁卢名商会严格把控活动商业信誉：所有峰会、私董会与商务沙龙<strong>仅限实名认证会员企业</strong>发起。
+                  滑铁卢融商汇严格把控活动商业信誉：所有峰会、私董会与商务沙龙<strong>仅限实名认证会员企业</strong>发起。
                   核验通过后，系统将<strong>自动直接为您打开活动发布窗口</strong>！
                 </p>
               </div>
@@ -819,7 +819,7 @@ export const EventsHub: React.FC<EventsHubProps> = ({
                 <span>客户隐私保护与会员实名安全原则</span>
               </div>
               <p className="text-[11px] text-slate-400 leading-relaxed">
-                滑铁卢名商会严格执行企业会员隐私与商号权益保护：系统严禁泄露任何商会会员名单或提供未经授权的代登通道，仅限入驻企业持有人使用登记邮箱或 Google 官方认证安全校验。
+                滑铁卢融商汇严格执行企业会员隐私与商号权益保护：系统严禁泄露任何商会会员名单或提供未经授权的代登通道，仅限入驻企业持有人使用登记邮箱或 Google 官方认证安全校验。
               </p>
             </div>
 
@@ -835,7 +835,7 @@ export const EventsHub: React.FC<EventsHubProps> = ({
                   className="text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1 transition-colors text-xs"
                 >
                   <Building2 className="w-3.5 h-3.5" />
-                  <span>未入驻？申请加入滑铁卢名商会</span>
+                  <span>未入驻？申请加入滑铁卢融商汇</span>
                 </button>
               )}
               <button
@@ -895,7 +895,7 @@ export const EventsHub: React.FC<EventsHubProps> = ({
                     <div>
                       <span className="font-bold text-emerald-400">第一步会员资格核验已通过：</span>
                       <span className="text-white font-semibold">主办企业【{user?.company}】</span>
-                      <span className="text-slate-400 text-[11px] ml-1">({user?.name} · {user?.tier || '实名商会会员'})</span>
+                      <span className="text-slate-400 text-[11px] ml-1">({user?.name} · {user?.tier || '实名融商会员'})</span>
                     </div>
                   </div>
                   <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/30 flex-shrink-0">
@@ -1472,13 +1472,13 @@ export const EventsHub: React.FC<EventsHubProps> = ({
             <div className="space-y-1 pt-2">
               <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold">
                 <QrCode className="w-3.5 h-3.5" />
-                名商会数字通行凭证
+                融商汇数字通行凭证
               </div>
               <h3 className="text-base font-bold text-white pt-1">
                 {showTicketModal.title}
               </h3>
               <p className="text-xs text-slate-400">
-                持票嘉宾: {user?.name || '会员嘉宾'} ({user?.company || '名商会成员'})
+                持票嘉宾: {user?.name || '会员嘉宾'} ({user?.company || '融商汇成员'})
               </p>
             </div>
 
@@ -1506,7 +1506,7 @@ export const EventsHub: React.FC<EventsHubProps> = ({
                   <rect x="85" y="85" width="8" height="8" />
                 </svg>
                 <span className="text-[9px] text-amber-400 font-mono tracking-widest uppercase">
-                  WEBA-PASS-2026-X889
+                  WBCA-PASS-2026-X889
                 </span>
               </div>
             </div>

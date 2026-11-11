@@ -82,7 +82,7 @@ export const PointsCenter: React.FC<PointsCenterProps> = ({
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
                 <span className="text-xs font-bold text-amber-300 tracking-wider uppercase">
-                  名商会员专属信誉资产
+                  融商会员专属信誉资产
                 </span>
               </div>
               <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold flex items-center gap-1">
@@ -93,7 +93,7 @@ export const PointsCenter: React.FC<PointsCenterProps> = ({
 
             <div>
               <div className="text-xs sm:text-sm text-slate-400 font-medium">
-                当前可用名商积分 (Reputation Points)
+                当前可用融商积分 (Convergence Points)
               </div>
               <div className="text-4xl sm:text-5xl font-black text-amber-300 font-serif tracking-tight mt-1">
                 {userPoints.toLocaleString()}
@@ -129,10 +129,10 @@ export const PointsCenter: React.FC<PointsCenterProps> = ({
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-white font-bold text-base">
               <CalendarCheck className="w-5 h-5 text-amber-400" />
-              每日名商签到打卡
+              每日融商签到打卡
             </div>
             <p className="text-xs text-slate-400 leading-relaxed">
-              坚持每日打卡，保持名商会在线活跃度，持续积累公信力权重与专属兑换积分。
+              坚持每日打卡，保持融商汇在线活跃度，持续积累公信力权重与专属兑换积分。
             </p>
           </div>
 

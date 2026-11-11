@@ -25,9 +25,9 @@ try {
   const fbConfig = JSON.parse(fbConfigRaw);
   const fbApp = initFirebaseApp(fbConfig, 'weba-server-db');
   serverDb = initFirestore(fbApp, fbConfig.firestoreDatabaseId);
-  console.log('[WEBA Server] Connected to Firestore database for central system configurations');
+  console.log('[WBCA Server] Connected to Firestore database for central system configurations');
 } catch (err: any) {
-  console.warn('[WEBA Server] Failed to initialize server Firestore SDK:', err?.message || err);
+  console.warn('[WBCA Server] Failed to initialize server Firestore SDK:', err?.message || err);
 }
 
 const app = express();
@@ -71,7 +71,7 @@ app.post('/api/ai/reputation-analysis', async (req, res) => {
         analysisSummary: `${merchantName}在滑铁卢地区表现出极其稳健的商誉基础。在行业规范、契约履约率、会员间口碑以及社区公益投入等维度均处于高位水平，未检索到严重法律诉讼或不可调和的消费者争议。`,
         strengths: [
           '本地经营合规透明，拥有完善的商业保险与行业资质',
-          '在滑铁卢名商会内部互助体系中有多次高分履约评价',
+          '在滑铁卢融商汇内部互助体系中有多次高分履约评价',
           '社区品牌声量积极，顾客复购率与净推荐值(NPS)领先'
         ],
         riskPoints: [
@@ -85,15 +85,15 @@ app.post('/api/ai/reputation-analysis', async (req, res) => {
           mentionFrequency: '月度提及量 140+ 次'
         },
         actionableRecommendations: [
-          '开通名商会“诚信商户”数字区块链电子徽章展示',
-          '积极参与名商会每月线下互助私董会，提升B2B企业端转介量',
+          '开通融商汇“诚信商企”数字电子徽章展示',
+          '积极参与融商汇每月线下互助私董会，提升B2B企业端转介量',
           '响应并认领商会积分商城合作，提供会员专属专享优惠'
         ],
         source: 'system-evaluation'
       });
     }
 
-    const prompt = `你是非营利组织【滑铁卢名商会】(Waterloo Elite Business Association)的“AI商誉与企业信誉分析专家”。
+    const prompt = `你是非营利组织【滑铁卢融商汇】(Waterloo Business Convergence Alliance)的“AI商誉与企业信誉分析专家”。
 请根据以下商户信息及在加拿大滑铁卢地区（Waterloo / Kitchener / Cambridge）的经营背景，给出深度商誉评估、舆情监测结论与可信度评级。
 
 【商户档案】
@@ -150,7 +150,7 @@ app.post('/api/ai/reputation-analysis', async (req, res) => {
       analysisSummary: `${merchantName || '该企业'}在加拿大滑铁卢地区表现出稳健的商誉基础。在行业规范、契约履约率、会员间口碑以及社区公益投入等维度均处于高位水平，未检索到严重法律诉讼或不可调和的消费者争议。`,
       strengths: [
         '本地经营合规透明，拥有完善的商业保险与行业资质',
-        '在滑铁卢名商会内部互助体系中有多次高分履约评价',
+        '在滑铁卢融商汇内部互助体系中有多次高分履约评价',
         '社区品牌声量积极，顾客复购率与净推荐值(NPS)领先'
       ],
       riskPoints: [
@@ -164,8 +164,8 @@ app.post('/api/ai/reputation-analysis', async (req, res) => {
         mentionFrequency: '月度提及量 140+ 次'
       },
       actionableRecommendations: [
-        '开通名商会“诚信商户”数字区块链电子徽章展示',
-        '积极参与名商会每月线下互助私董会，提升B2B企业端转介量',
+        '开通融商汇“诚信商企”数字电子徽章展示',
+        '积极参与融商汇每月线下互助私董会，提升B2B企业端转介量',
         '响应并认领商会积分商城合作，提供会员专属专享优惠'
       ],
       source: 'chamber-expert-fallback',
@@ -189,8 +189,8 @@ app.post('/api/ai/smart-match', async (req, res) => {
         matchRationale: `根据您在滑铁卢地区的业务需求「${needDescription}」，AI商机引擎已为您在本地商会网络中定位到了最相符的2家骨干会员企业。两家商户均经过实名认证并具备A级以上信誉，拥有深厚的本地高校及政商资源。`,
         recommendedMemberIds: [1, 3],
         suggestedNextSteps: [
-          '直接通过名商会内信向对方联络人发送商机对接函（系统赠送10点互助积分）',
-          '在即将举办的滑铁卢名商会私董闭门会上预约5分钟现场交流',
+          '直接通过融商汇内信向对方联络人发送商机对接函（系统赠送10点互助积分）',
+          '在即将举办的滑铁卢融商汇私董闭门会上预约5分钟现场交流',
           '签署商会标准互助商业保密备忘录（NDA）'
         ],
         confidenceScore: 96,
@@ -198,7 +198,7 @@ app.post('/api/ai/smart-match', async (req, res) => {
       });
     }
 
-    const prompt = `你是非营利组织【滑铁卢名商会】的“智能商机与互助撮合AI系统”。
+    const prompt = `你是非营利组织【滑铁卢融商汇】的“智能商机与互助撮合AI系统”。
 会员提出了以下互助或商业合作需求：
 【需求描述】: ${needDescription}
 【需求类型/分类】: ${category || '通用互助'}
@@ -246,7 +246,7 @@ ${JSON.stringify(existingMembers || [
       matchRationale: `根据您在滑铁卢地区的业务需求「${needDescription || '综合互助'}」，AI商机匹配引擎从商会认证名录中筛选出最契合的骨干会员，具备极高技术成熟度与本地商誉积淀。`,
       recommendedMemberIds: [1, 2],
       suggestedNextSteps: [
-        '通过名商会内信直接向该企业负责人发送合作意向',
+        '通过融商汇内信直接向该企业负责人发送合作意向',
         '在商会下次线下私董会上现场交流',
         '可申请商会秘书处协助进行三方商信公证'
       ],
@@ -277,7 +277,7 @@ app.all('/api/ai/sentiment-monitor', async (req, res) => {
         attention: 3
       },
       topCommunityKeywords: ['科技协同', '高管税务', '商业地产', '名商积分', '合规出海', 'UW校友创业'],
-      aiInsight: '滑铁卢名商会近期商业互助情绪高度繁荣，尤其在高科技落地应用与高端专业服务板块展现出强劲的双向协同需求。舆情整体呈高度信任与健康态势。'
+      aiInsight: '滑铁卢融商汇近期商业互助情绪高度繁荣，尤其在产融科技协同与高端专业服务板块展现出强劲的双向赋能需求。舆情整体呈高度信任与健康态势。'
     };
 
     return res.json({ success: true, ...data });
@@ -304,7 +304,7 @@ let notificationConfig: NotificationConfig = {
   smtpPort: Number(process.env.SMTP_PORT) || 587,
   smtpUser: process.env.SMTP_USER || '',
   smtpPass: process.env.SMTP_PASS || '',
-  smtpFrom: process.env.SMTP_FROM || 'WEBA 滑铁卢名商会秘书处 <weba.chamber@gmail.com>',
+  smtpFrom: process.env.SMTP_FROM || 'WBCA 滑铁卢融商汇秘书处 <weba.chamber@gmail.com>',
 };
 
 // Auto-load SMTP and notification config from Firestore system_config/smtp on boot
@@ -324,13 +324,13 @@ async function loadSmtpConfigFromFirestore() {
         if (Array.isArray(data.adminEmails) && data.adminEmails.length > 0) {
           notificationConfig.adminEmails = data.adminEmails;
         }
-        console.log('[WEBA Server] Synced SMTP configuration from Firestore system_config/smtp');
+        console.log('[WBCA Server] Synced SMTP configuration from Firestore system_config/smtp');
       }
     } else {
-      console.log('[WEBA Server] No custom SMTP found in Firestore system_config/smtp, using current defaults');
+      console.log('[WBCA Server] No custom SMTP found in Firestore system_config/smtp, using current defaults');
     }
   } catch (err: any) {
-    console.warn('[WEBA Server] Note reading Firestore SMTP config:', err?.message || err);
+    console.warn('[WBCA Server] Note reading Firestore SMTP config:', err?.message || err);
   }
 }
 
@@ -455,7 +455,7 @@ app.post('/api/notifications/config', async (req, res) => {
             const docRef = firestoreDoc(serverDb, 'system_config', 'smtp');
             await setFirestoreDoc(docRef, { adminEmails: notificationConfig.adminEmails }, { merge: true });
           } catch (e) {
-            console.warn('[WEBA Server] Could not sync adminEmails to Firestore:', e);
+            console.warn('[WBCA Server] Could not sync adminEmails to Firestore:', e);
           }
         }
       }
@@ -497,7 +497,7 @@ app.post('/api/notifications/smtp-config', async (req, res) => {
         payload.smtpPass = notificationConfig.smtpPass;
       }
       await setFirestoreDoc(docRef, payload, { merge: true });
-      console.log('[WEBA Server] Saved SMTP configuration to Firestore collection: system_config/smtp');
+      console.log('[WBCA Server] Saved SMTP configuration to Firestore collection: system_config/smtp');
     }
 
     return res.json({
@@ -549,11 +549,11 @@ app.post('/api/notifications/test-smtp', async (req, res) => {
     await transporter.verify();
 
     // Send actual test verification email
-    const subject = '【滑铁卢名商会】发信邮局 (SMTP) 云端测试邮件 · 验证成功';
-    const text = `尊贵的商会管理员：\n\n这是一封来自【滑铁卢名商会】数字化中枢的测试邮件。\n\n恭喜！您的企业/商会发信邮箱与 Google Cloud Firestore 云端数据库已成功联通：\n- SMTP 主机：${notificationConfig.smtpHost}\n- SMTP 端口：${notificationConfig.smtpPort}\n- 发信邮箱：${notificationConfig.smtpUser}\n- 测试接收：${recipient}\n- 校验时间：${new Date().toLocaleString('zh-CN')}\n\n未来每当有新商户提交入驻申请、或会员发布商机互助悬赏时，系统将使用此官方邮箱自动派发通知！\n\n滑铁卢名商会秘书处`;
+    const subject = '【滑铁卢融商汇】发信邮局 (SMTP) 云端测试邮件 · 验证成功';
+    const text = `尊贵的商会管理员：\n\n这是一封来自【滑铁卢融商汇】数字化中枢的测试邮件。\n\n恭喜！您的企业/商会发信邮箱与 Google Cloud Firestore 云端数据库已成功联通：\n- SMTP 主机：${notificationConfig.smtpHost}\n- SMTP 端口：${notificationConfig.smtpPort}\n- 发信邮箱：${notificationConfig.smtpUser}\n- 测试接收：${recipient}\n- 校验时间：${new Date().toLocaleString('zh-CN')}\n\n未来每当有新商户提交入驻申请、或会员发布商机互助悬赏时，系统将使用此官方邮箱自动派发通知！\n\n滑铁卢融商汇秘书处`;
     const html = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 24px; border-radius: 12px; border: 1px solid #10b981; max-width: 600px;">
-        <h2 style="color: #34d399; margin: 0 0 12px 0;">🎉 滑铁卢名商会 · 发信邮局测试成功</h2>
+        <h2 style="color: #34d399; margin: 0 0 12px 0;">🎉 滑铁卢融商汇 · 发信邮局测试成功</h2>
         <p style="color: #cbd5e1; font-size: 14px; line-height: 1.6;">
           恭喜！商会官方 SMTP 发信配置已成功与 <strong>Google Cloud Firestore 中央数据库</strong> 挂接并完成双向通讯测试。
         </p>
@@ -630,7 +630,7 @@ app.post('/api/notifications/merchant-application', async (req, res) => {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
 
-    const subject = `【滑铁卢名商会】新商户入驻待审提醒: ${merchant.name} (${merchant.category || '综合商户'})`;
+    const subject = `【滑铁卢融商汇】新商户入驻待审提醒: ${merchant.name} (${merchant.category || '综合商户'})`;
     const snippet = `商户「${merchant.name}」已提交入驻申请，负责人：${merchant.repName || '未填'}，电话：${merchant.phone || '未填'}，请秘书处及时审批。`;
 
     const html = `
@@ -659,12 +659,12 @@ app.post('/api/notifications/merchant-application', async (req, res) => {
 <body>
   <div class="container">
     <div class="header">
-      <h1>滑铁卢创商汇 · 秘书处审核通报</h1>
-      <p>Waterloo Elite Business Association · New Merchant Application</p>
+      <h1>滑铁卢融商汇 · 秘书处审核通报</h1>
+      <p>Waterloo Business Convergence Alliance · New Merchant Application</p>
     </div>
     <div class="content">
       <span class="badge">待秘书处审核审批 (Pending Approval)</span>
-      <h2 style="margin: 0 0 8px 0; color: #ffffff; font-size: 18px;">有新商户提交入驻名商录申请</h2>
+      <h2 style="margin: 0 0 8px 0; color: #ffffff; font-size: 18px;">有新商户提交入驻企业名录申请</h2>
       <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; margin: 0 0 16px 0;">
         尊贵的商会管理员，您好！会员已正式提交企业入驻申请，请登录商会后台进行企业资质核验、点亮上线或驳回操作。
       </p>
@@ -701,15 +701,15 @@ app.post('/api/notifications/merchant-application', async (req, res) => {
       <a href="${auditUrl}" class="btn">立即前往商会后台审核准入</a>
     </div>
     <div class="footer">
-      本邮件由滑铁卢创商汇 (WEBA) 数字化中枢自动发送至管理员信箱：${recipients.join(', ')}<br>
-      © ${new Date().getFullYear()} Waterloo Elite Business Association. All rights reserved.
+      本邮件由滑铁卢融商汇 (WBCA) 数字化中枢自动发送至管理员信箱：${recipients.join(', ')}<br>
+      © ${new Date().getFullYear()} Waterloo Business Convergence Alliance. All rights reserved.
     </div>
   </div>
 </body>
 </html>
     `;
 
-    const text = `【滑铁卢名商会·新商户入驻待审】\n企业名称：${merchant.name}\n行业：${merchant.category}\n代表：${merchant.repName}\n电话：${merchant.phone}\n邮箱：${merchant.email}\n网址：${merchant.website}\n标语：${merchant.tagline}\n请前往商会后台审批：${auditUrl}`;
+    const text = `【滑铁卢融商汇·新商户入驻待审】\n企业名称：${merchant.name}\n行业：${merchant.category}\n代表：${merchant.repName}\n电话：${merchant.phone}\n邮箱：${merchant.email}\n网址：${merchant.website}\n标语：${merchant.tagline}\n请前往商会后台审批：${auditUrl}`;
 
     const mailtoUrl = `mailto:${recipients.join(',')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
 
@@ -831,8 +831,8 @@ app.post('/api/notifications/chamber-opportunity', async (req, res) => {
 <body>
   <div class="container">
     <div class="header">
-      <h1>滑铁卢创商汇 · 会员商机互助通报</h1>
-      <p>Waterloo Elite Business Association · Member Opportunity Broadcast</p>
+      <h1>滑铁卢融商汇 · 会员商机互助通报</h1>
+      <p>Waterloo Business Convergence Alliance · Member Opportunity Broadcast</p>
     </div>
     <div class="content">
       <div class="badges-row">
@@ -877,16 +877,16 @@ app.post('/api/notifications/chamber-opportunity', async (req, res) => {
     </div>
 
     <div class="footer">
-      本邮件由滑铁卢创商汇 (WEBA) 数字化中枢向商会全体会员商企自动派发。<br>
+      本邮件由滑铁卢融商汇 (WBCA) 数字化中枢向商会全体会员商企自动派发。<br>
       为了保护每位会员的商业隐私，所有商户邮箱均已采用密送 (BCC) 保护。<br>
-      © ${new Date().getFullYear()} Waterloo Elite Business Association. All rights reserved.
+      © ${new Date().getFullYear()} Waterloo Business Convergence Alliance. All rights reserved.
     </div>
   </div>
 </body>
 </html>
     `;
 
-    const text = `【滑铁卢创商汇·商机互助通报】\n\n新商机：「${postTitle}」\n发布企业：${authorCompany} (${authorName})\n分类：${category}\n悬赏积分：${rewardPoints} 分\n\n【需求详情】：\n${rawDesc}\n\n【对接联络方式】：\n${contactInfo}\n\n立即前往互助圈响应：${hubUrl}`;
+    const text = `【滑铁卢融商汇·商机互助通报】\n\n新商机：「${postTitle}」\n发布企业：${authorCompany} (${authorName})\n分类：${category}\n悬赏积分：${rewardPoints} 分\n\n【需求详情】：\n${rawDesc}\n\n【对接联络方式】：\n${contactInfo}\n\n立即前往互助圈响应：${hubUrl}`;
 
     // For mass mail, use BCC to protect all merchant email privacy!
     const mailtoUrl = `mailto:?bcc=${encodeURIComponent(combinedEmails.join(','))}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
@@ -982,8 +982,8 @@ app.post('/api/notifications/opportunity-pending-admin', async (req, res) => {
 <body>
   <div class="container">
     <div class="header">
-      <h1>滑铁卢创商汇 · 外部商机待审提醒</h1>
-      <p>Waterloo Elite Business Association · External Opportunity Audit Alert</p>
+      <h1>滑铁卢融商汇 · 外部商机待审提醒</h1>
+      <p>Waterloo Business Convergence Alliance · External Opportunity Audit Alert</p>
     </div>
     <div class="content">
       <span class="badge">🔔 待秘书处核验 (Pending Secretary Audit)</span>
@@ -1009,15 +1009,15 @@ app.post('/api/notifications/opportunity-pending-admin', async (req, res) => {
       <a href="${auditUrl}" class="btn">立即前往商机互助圈审核并群发</a>
     </div>
     <div class="footer">
-      本邮件由滑铁卢创商汇 (WEBA) 数字化中枢向管理员信箱发送：${recipients.join(', ')}<br>
-      © ${new Date().getFullYear()} Waterloo Elite Business Association. All rights reserved.
+      本邮件由滑铁卢融商汇 (WBCA) 数字化中枢向管理员信箱发送：${recipients.join(', ')}<br>
+      © ${new Date().getFullYear()} Waterloo Business Convergence Alliance. All rights reserved.
     </div>
   </div>
 </body>
 </html>
     `;
 
-    const text = `【滑铁卢创商汇·外部商机待审】\n外部客户：${authorName} (${authorCompany})\n标题：${postTitle}\n联系方式：${contactInfo}\n详情：${post.description}\n请登录商会后台审核：${auditUrl}`;
+    const text = `【滑铁卢融商汇·外部商机待审】\n外部客户：${authorName} (${authorCompany})\n标题：${postTitle}\n联系方式：${contactInfo}\n详情：${post.description}\n请登录商会后台审核：${auditUrl}`;
 
     const result = await sendOrLogEmail({
       to: recipients,
@@ -1068,10 +1068,10 @@ async function setupViteOrStatic() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`[WEBA Server] Server running on http://0.0.0.0:${PORT}`);
+    console.log(`[WBCA Server] Server running on http://0.0.0.0:${PORT}`);
   });
 }
 
 setupViteOrStatic().catch((err) => {
-  console.error('[WEBA Server] Failed to start:', err);
+  console.error('[WBCA Server] Failed to start:', err);
 });

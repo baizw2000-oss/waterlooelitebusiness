@@ -191,7 +191,7 @@ export const MutualHelpHub: React.FC<MutualHelpHubProps> = ({
       id: Date.now(),
       authorUid: isExternal ? undefined : user?.uid,
       authorName: isExternal ? externalName.trim() : (user?.name || '商会实名会员'),
-      authorCompany: isExternal ? (externalCompany.trim() || '外部潜在客户') : (user?.company || '名商会认证企业'),
+      authorCompany: isExternal ? (externalCompany.trim() || '外部潜在客户') : (user?.company || '融商汇认证企业'),
       authorAvatar: isExternal ? '💼' : (user?.avatar || '👨‍💼'),
       authorPhone: isExternal ? externalPhone.trim() : user?.phone,
       authorEmail: isExternal ? externalEmail.trim() : user?.email,
@@ -1309,7 +1309,7 @@ export const MutualHelpHub: React.FC<MutualHelpHubProps> = ({
                           }}
                           className="text-amber-400 hover:text-amber-300 text-[11px] font-semibold underline underline-offset-2 ml-auto"
                         >
-                          申请入驻名商会
+                          申请入驻融商汇
                         </button>
                       )}
                     </div>

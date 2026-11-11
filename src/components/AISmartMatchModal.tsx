@@ -52,7 +52,7 @@ export const AISmartMatchModal: React.FC<AISmartMatchModalProps> = ({
       const result = await fetchSmartMatch({
         needDescription: query.trim(),
         category: '综合商业互助',
-        budgetOrReward: '名商会常规互助',
+        budgetOrReward: '融商汇常规互助',
         existingMembers: merchants.map((m) => ({
           id: m.id,
           name: m.name,
@@ -85,7 +85,7 @@ export const AISmartMatchModal: React.FC<AISmartMatchModalProps> = ({
             </div>
             <div>
               <h3 className="text-sm sm:text-base font-bold text-white">
-                滑铁卢名商会 AI 商机智能撮合引擎
+                滑铁卢融商汇 AI 商机智能撮合引擎
               </h3>
               <p className="text-[11px] text-cyan-400/80">
                 以自然语言语义理解，快速精准穿透280+本地认证企业供需网络
@@ -184,7 +184,7 @@ export const AISmartMatchModal: React.FC<AISmartMatchModalProps> = ({
               {/* Recommended Merchants Cards */}
               <div className="space-y-3">
                 <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider">
-                  推荐对接的滑铁卢名商会员 ({recommendedMerchants.length})
+                  推荐对接的滑铁卢融商汇企业 ({recommendedMerchants.length})
                 </h4>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

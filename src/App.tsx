@@ -97,7 +97,7 @@ const GUEST_USER_PROFILE: UserProfile = {
   avatar: '👤',
   tier: '外部客户',
   points: 0,
-  bio: '欢迎访问滑铁卢名商会官网，您可浏览名商录、商机信息并报名公开商务活动。',
+  bio: '欢迎访问滑铁卢融商汇官网，您可浏览企业名录、商机信息并报名公开商务活动。',
   industry: '商务咨询',
   joinedDate: '外部访客视角',
   isMember: false,
@@ -188,7 +188,7 @@ export default function App() {
         const found = merchants.find((m) => String(m.id) === String(merchantId));
         if (found) {
           setSelectedMerchantForDetail(found);
-          document.title = `${found.name} (${found.category}) | 滑铁卢名商会企业认证档案`;
+          document.title = `${found.name} (${found.category}) | 滑铁卢融商汇企业认证档案`;
         }
       }
     } catch (e) {}
@@ -200,11 +200,11 @@ export default function App() {
     try {
       const url = new URL(window.location.href);
       if (selectedMerchantForDetail) {
-        document.title = `${selectedMerchantForDetail.name} (${selectedMerchantForDetail.category}) | 滑铁卢名商会企业认证档案`;
+        document.title = `${selectedMerchantForDetail.name} (${selectedMerchantForDetail.category}) | 滑铁卢融商汇企业认证档案`;
         url.searchParams.set('merchant', String(selectedMerchantForDetail.id));
         window.history.replaceState({}, '', url.toString());
       } else {
-        document.title = 'Waterloo Elite Business Association | 滑铁卢名商会';
+        document.title = 'Waterloo Business Convergence Alliance | 滑铁卢融商汇';
         if (url.searchParams.has('merchant')) {
           url.searchParams.delete('merchant');
           window.history.replaceState({}, '', url.toString());
@@ -789,14 +789,14 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center font-serif text-amber-300 font-bold">
-              商
+              融
             </div>
             <div>
               <p className="font-bold text-white">
-                滑铁卢名商会 Waterloo Elite Business Association
+                滑铁卢融商汇 Waterloo Business Convergence Alliance
               </p>
               <p className="text-[11px] text-slate-500">
-                非营利法人机构注册编号: ON-882941-C · 智汇滑铁卢 · 互助铸商誉 · Firestore 云端持久化保全
+                非营利法人机构注册编号: ON-882941-C · 智汇滑铁卢 · 融商聚势 · Firestore 云端持久化保全
               </p>
             </div>
           </div>
@@ -821,7 +821,7 @@ export default function App() {
               AI 商机撮合
             </button>
             <span className="text-slate-600">|</span>
-            <span>© {new Date().getFullYear()} WEBA. All Rights Reserved.</span>
+            <span>© {new Date().getFullYear()} WBCA. All Rights Reserved.</span>
           </div>
         </div>
       </footer>

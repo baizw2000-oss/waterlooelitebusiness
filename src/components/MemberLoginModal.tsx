@@ -137,7 +137,7 @@ export const MemberLoginModal: React.FC<MemberLoginModalProps> = ({
         avatar: matched.logo || '🏢',
         tier: matched.tier || '认证商户',
         industry: matched.category,
-        bio: matched.description || matched.tagline || '滑铁卢名商会实名认证企业会员',
+        bio: matched.description || matched.tagline || '滑铁卢融商汇实名认证企业会员',
         isMember: true,
         merchantId: matched.id,
         joinedDate: '商会实名认证会员',
@@ -216,7 +216,7 @@ export const MemberLoginModal: React.FC<MemberLoginModalProps> = ({
         avatar: matched.logo || '🏢',
         tier: matched.tier || '认证商户',
         industry: matched.category,
-        bio: matched.description || matched.tagline || '滑铁卢名商会实名认证企业会员',
+        bio: matched.description || matched.tagline || '滑铁卢融商汇实名认证企业会员',
         isMember: true,
         merchantId: matched.id,
         joinedDate: '商会实名认证会员',
@@ -267,7 +267,7 @@ export const MemberLoginModal: React.FC<MemberLoginModalProps> = ({
           avatar: matched.logo || '🏢',
           tier: matched.tier || '认证商户',
           industry: matched.category,
-          bio: matched.description || matched.tagline || '滑铁卢名商会实名认证企业会员',
+          bio: matched.description || matched.tagline || '滑铁卢融商汇实名认证企业会员',
           isMember: true,
           merchantId: matched.id,
           joinedDate: 'Google 快捷认证会员',
@@ -324,10 +324,10 @@ export const MemberLoginModal: React.FC<MemberLoginModalProps> = ({
             </div>
           </div>
           <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight">
-            滑铁卢名商会 · 企业会员统一认证中心
+            滑铁卢融商汇 · 企业会员统一认证中心
           </h3>
           <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
-            支持所有企业域名邮箱、Outlook 等独立密码认证，一键点亮<strong>「实名商会企业会员」</strong>蓝标
+            支持所有企业域名邮箱、Outlook 等独立密码认证，一键点亮<strong>「实名融商汇企业会员」</strong>蓝标
           </p>
         </div>
 
@@ -683,7 +683,7 @@ export const MemberLoginModal: React.FC<MemberLoginModalProps> = ({
             <span>客户隐私与权限安全保障</span>
           </div>
           <p className="text-[11px] text-slate-400 leading-relaxed">
-            滑铁卢名商会严格捍卫会员商业隐私与企业数据安全：系统严禁跨账号越权与已有客户信息公开暴露，仅限企业法定代表人或授权负责人通过本人企业独立密码或本人 Google 授权安全登入。
+            滑铁卢融商汇严格捍卫会员商业隐私与企业数据安全：系统严禁跨账号越权与已有客户信息公开暴露，仅限企业法定代表人或授权负责人通过本人企业独立密码或本人 Google 授权安全登入。
           </p>
         </div>
 

@@ -32,21 +32,21 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-amber-400 via-amber-600 to-amber-700 p-0.5 shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform flex-shrink-0">
               <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center border border-amber-400/40">
                 <span className="text-lg sm:text-2xl font-serif font-black bg-gradient-to-br from-amber-200 via-amber-400 to-amber-100 bg-clip-text text-transparent">
-                  商
+                  融
                 </span>
               </div>
             </div>
             <div>
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <h1 className="text-sm sm:text-base lg:text-lg font-bold tracking-tight text-white flex items-center gap-1.5 whitespace-nowrap">
-                  滑铁卢名商会
+                  滑铁卢融商汇
                   <span className="hidden sm:inline-block text-[10px] uppercase font-semibold tracking-wider px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">
-                    WEBA
+                    WBCA
                   </span>
                 </h1>
               </div>
               <p className="text-[10px] sm:text-[11px] text-amber-400/70 hidden sm:block font-medium whitespace-nowrap">
-                Waterloo Elite Business Association
+                Waterloo Business Convergence Alliance
               </p>
             </div>
           </div>
@@ -92,9 +92,9 @@ export const Header: React.FC<HeaderProps> = ({
             {user.isMember ? (
               <div className="flex items-center gap-1 sm:gap-1.5">
                 {(() => {
-                  const rawName = user.company || user.name || '名商会员';
+                  const rawName = user.company || user.name || '融商会员';
                   const isClean = rawName && !rawName.startsWith('data:') && !rawName.startsWith('http') && rawName.length < 50;
-                  const displayName = isClean ? rawName : '名商会员';
+                  const displayName = isClean ? rawName : '融商会员';
 
                   return (
                     <button 
@@ -104,7 +104,7 @@ export const Header: React.FC<HeaderProps> = ({
                           ? 'bg-amber-500/20 border-amber-400 text-amber-300'
                           : 'bg-slate-800/90 border-amber-500/30 hover:border-amber-400/60 text-slate-200'
                       }`}
-                      title={`实名商会企业：${displayName} · 点击进入个人中心`}
+                      title={`实名融商企：${displayName} · 点击进入个人中心`}
                     >
                       <UserAvatar avatar={user.avatar} name={displayName} size="xs" className="w-5 h-5 rounded-full flex-shrink-0" />
                       <span className="text-[11px] sm:text-xs font-semibold text-white max-w-[65px] sm:max-w-[100px] truncate">
