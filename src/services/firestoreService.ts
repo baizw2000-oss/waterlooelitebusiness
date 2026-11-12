@@ -151,6 +151,79 @@ export function subscribeMerchants(onUpdate: (merchants: Merchant[]) => void) {
   );
 }
 
+// 2b. Direct Fetch Single Merchant by ID (Immediate lookup for ?merchant=ID deep links)
+export async function fetchMerchantById(merchantId: string | number): Promise<Merchant | null> {
+  const mId = String(merchantId || '').trim();
+  if (!mId) return null;
+
+  // 1. Check in-memory / LocalStorage cache first for instant synchronous response
+  try {
+    const cached = localStorage.getItem(LOCAL_STORAGE_KEYS.MERCHANTS);
+    if (cached) {
+      const list: Merchant[] = JSON.parse(cached);
+      const found = list.find((m) => String(m.id) === mId || String((m as any).docId) === mId);
+      if (found) {
+        return sanitizeMerchant(found);
+      }
+    }
+  } catch (e) {
+    // Ignore cache error
+  }
+
+  // 2. Direct Firestore document lookup
+  try {
+    const docRef = doc(db, 'merchants', mId);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      const data = snap.data() as Merchant;
+      const merchant = sanitizeMerchant({
+        ...data,
+        id: snap.id,
+      });
+      return merchant;
+    }
+  } catch (e) {
+    console.warn(`[Firestore] fetchMerchantById doc('${mId}') error:`, e);
+  }
+
+  // 3. Firestore query lookup (in case document ID differs from 'id' field)
+  try {
+    const q = query(collection(db, 'merchants'), where('id', '==', mId));
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      const firstDoc = snap.docs[0];
+      const data = firstDoc.data() as Merchant;
+      return sanitizeMerchant({
+        ...data,
+        id: firstDoc.id,
+      });
+    }
+  } catch (e) {
+    console.warn(`[Firestore] fetchMerchantById query('id' == '${mId}') error:`, e);
+  }
+
+  // 4. Server API endpoint fallback (/api/merchants/:id)
+  try {
+    const res = await fetch(`/api/merchants/${encodeURIComponent(mId)}`);
+    if (res.ok) {
+      const json = await res.json();
+      if (json && json.merchant) {
+        return sanitizeMerchant(json.merchant);
+      }
+    }
+  } catch (e) {
+    // Ignore network error
+  }
+
+  // 5. Initial merchants fallback
+  const mockFound = INITIAL_MERCHANTS.find((m) => String(m.id) === mId);
+  if (mockFound) {
+    return sanitizeMerchant({ ...mockFound, auditStatus: 'APPROVED' });
+  }
+
+  return null;
+}
+
 // 3. Real-time Help Posts Subscription
 export function subscribeHelpPosts(onUpdate: (posts: HelpPost[]) => void) {
   try {

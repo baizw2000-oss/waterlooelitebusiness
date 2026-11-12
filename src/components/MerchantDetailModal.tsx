@@ -20,6 +20,7 @@ import {
   User
 } from 'lucide-react';
 import { MerchantAvatar } from './MerchantAvatar';
+import { MerchantPosterModal } from './MerchantPosterModal';
 
 interface MerchantDetailModalProps {
   merchant: Merchant | null;
@@ -38,6 +39,7 @@ export const MerchantDetailModal: React.FC<MerchantDetailModalProps> = ({
   const [directMsg, setDirectMsg] = useState('');
   const [showDirectMsgBox, setShowDirectMsgBox] = useState(false);
   const [msgSent, setMsgSent] = useState(false);
+  const [showPosterModal, setShowPosterModal] = useState(false);
 
   if (!merchant) return null;
 
@@ -75,6 +77,14 @@ export const MerchantDetailModal: React.FC<MerchantDetailModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowPosterModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-amber-500/40 bg-gradient-to-r from-amber-500/20 to-amber-600/20 hover:from-amber-500/35 hover:to-amber-600/35 text-amber-300 text-xs font-semibold shadow-sm transition-all"
+              title="生成包含专属二维码的独立名片海报"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+              <span>生成名片海报</span>
+            </button>
             <button
               onClick={handleCopyLink}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all ${
@@ -162,30 +172,41 @@ export const MerchantDetailModal: React.FC<MerchantDetailModalProps> = ({
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               <div className="flex-1 bg-slate-950/90 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-cyan-200 truncate select-all">
                 {typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}?merchant=${merchant.id}` : `?merchant=${merchant.id}`}
               </div>
-              <button
-                onClick={handleCopyLink}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all flex-shrink-0 ${
-                  copied
-                    ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
-                    : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-md shadow-cyan-500/20'
-                }`}
-              >
-                {copied ? (
-                  <>
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>已复制链接</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5" />
-                    <span>复制直达链接</span>
-                  </>
-                )}
-              </button>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  onClick={handleCopyLink}
+                  className={`flex-1 sm:flex-none px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                    copied
+                      ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
+                      : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-md shadow-cyan-500/20'
+                  }`}
+                >
+                  {copied ? (
+                    <>
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>已复制链接</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>复制直达链接</span>
+                    </>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => setShowPosterModal(true)}
+                  className="flex-1 sm:flex-none px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 shadow-md shadow-amber-500/20 active:scale-95"
+                  title="生成带有专属二维码的社交媒体名片海报"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>生成名片海报</span>
+                </button>
+              </div>
             </div>
 
             <p className="text-[11px] text-slate-400 leading-relaxed">
@@ -408,13 +429,24 @@ export const MerchantDetailModal: React.FC<MerchantDetailModalProps> = ({
 
         {/* Modal Actions Footer */}
         <div className="sticky bottom-0 bg-slate-900/95 backdrop-blur-md px-6 py-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
-          <button
-            onClick={() => onOpenAIReputation(merchant)}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-600/20 to-blue-600/20 hover:from-cyan-600/40 hover:to-blue-600/40 border border-cyan-400/40 text-cyan-200 font-semibold text-xs shadow-md transition-all"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-cyan-300 animate-pulse" />
-            生成深度 AI 商誉与舆情诊断
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => onOpenAIReputation(merchant)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-cyan-600/20 to-blue-600/20 hover:from-cyan-600/40 hover:to-blue-600/40 border border-cyan-400/40 text-cyan-200 font-semibold text-xs shadow-md transition-all"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-cyan-300 animate-pulse" />
+              生成深度 AI 商誉与舆情诊断
+            </button>
+
+            <button
+              onClick={() => setShowPosterModal(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 font-semibold text-xs transition-all shadow-sm"
+              title="生成包含专属二维码的独立名片海报"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              生成名片海报
+            </button>
+          </div>
 
           <div className="flex items-center gap-2">
             <button
@@ -435,6 +467,14 @@ export const MerchantDetailModal: React.FC<MerchantDetailModalProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Social Media Card Poster Generation Modal */}
+      {showPosterModal && (
+        <MerchantPosterModal
+          merchant={merchant}
+          onClose={() => setShowPosterModal(false)}
+        />
+      )}
     </div>
   );
 };

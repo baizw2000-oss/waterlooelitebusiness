@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   TabType, 
   Merchant, 
@@ -21,6 +21,7 @@ import {
 import { 
   seedFirestoreIfEmpty, 
   subscribeMerchants, 
+  fetchMerchantById,
   subscribeHelpPosts, 
   subscribeEvents, 
   addMerchantToFirestore, 
@@ -178,20 +179,54 @@ export default function App() {
     };
   }, []);
 
-  // SEO & Deep-linking: Parse ?merchant=ID from URL on load
+  // Deep-linking tracking refs to prevent race condition on initial render
+  const initialDeepLinkMerchantIdRef = useRef<string | null>(null);
+  const deepLinkResolvedRef = useRef<boolean>(false);
+  const detailModalWasOpenRef = useRef<boolean>(false);
+
+  // 1b. Capture ?merchant=ID parameter immediately on initial mount & execute direct fetch
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
       const params = new URLSearchParams(window.location.search);
       const merchantId = params.get('merchant');
-      if (merchantId && merchants.length > 0) {
-        const found = merchants.find((m) => String(m.id) === String(merchantId));
-        if (found) {
-          setSelectedMerchantForDetail(found);
-          document.title = `${found.name} (${found.category}) | 滑铁卢融商汇企业认证档案`;
-        }
+      if (merchantId) {
+        initialDeepLinkMerchantIdRef.current = merchantId;
+
+        // Perform instant targeted lookup without waiting for bulk subscription
+        fetchMerchantById(merchantId)
+          .then((found) => {
+            if (found && !deepLinkResolvedRef.current) {
+              deepLinkResolvedRef.current = true;
+              setSelectedMerchantForDetail(found);
+              document.title = `${found.name} (${found.category}) | 滑铁卢融商汇企业认证档案`;
+              // Ensure this merchant is in the merchants state for consistent UI navigation
+              setMerchants((prev) => {
+                if (prev.some((m) => String(m.id) === String(found.id))) return prev;
+                return [found, ...prev];
+              });
+            }
+          })
+          .catch((err) => {
+            console.warn('[DeepLink] Direct fetch for merchantId failed:', err);
+          });
       }
     } catch (e) {}
+  }, []);
+
+  // 1c. Complementary fallback: match against merchants list as soon as Firestore subscription loads
+  useEffect(() => {
+    const targetId = initialDeepLinkMerchantIdRef.current;
+    if (!targetId || deepLinkResolvedRef.current) return;
+
+    if (merchants.length > 0) {
+      const found = merchants.find((m) => String(m.id) === String(targetId));
+      if (found) {
+        deepLinkResolvedRef.current = true;
+        setSelectedMerchantForDetail(found);
+        document.title = `${found.name} (${found.category}) | 滑铁卢融商汇企业认证档案`;
+      }
+    }
   }, [merchants]);
 
   // Sync document title and canonical URL parameter when merchant modal opens/closes
@@ -200,14 +235,19 @@ export default function App() {
     try {
       const url = new URL(window.location.href);
       if (selectedMerchantForDetail) {
+        detailModalWasOpenRef.current = true;
         document.title = `${selectedMerchantForDetail.name} (${selectedMerchantForDetail.category}) | 滑铁卢融商汇企业认证档案`;
         url.searchParams.set('merchant', String(selectedMerchantForDetail.id));
         window.history.replaceState({}, '', url.toString());
       } else {
-        document.title = 'Waterloo Business Convergence Alliance | 滑铁卢融商汇';
-        if (url.searchParams.has('merchant')) {
-          url.searchParams.delete('merchant');
-          window.history.replaceState({}, '', url.toString());
+        // CRITICAL BUG FIX: Only strip ?merchant from the URL if the user was ACTUALLY viewing the modal and manually closed it!
+        // Do NOT strip it during initial page load while selectedMerchantForDetail is still null and Firestore is querying!
+        if (detailModalWasOpenRef.current) {
+          document.title = 'Waterloo Business Convergence Alliance | 滑铁卢融商汇';
+          if (url.searchParams.has('merchant')) {
+            url.searchParams.delete('merchant');
+            window.history.replaceState({}, '', url.toString());
+          }
         }
       }
     } catch (e) {}

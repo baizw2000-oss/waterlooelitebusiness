@@ -50,6 +50,36 @@ if (apiKey && apiKey !== 'MY_GEMINI_API_KEY' && !apiKey.includes('MY_GEMINI')) {
   });
 }
 
+// 0. Direct Merchant Fetching by ID for Deep Link & SEO indexing
+app.get('/api/merchants/:id', async (req, res) => {
+  try {
+    const merchantId = req.params.id;
+    if (!merchantId) {
+      return res.status(400).json({ error: '商户ID不能为空' });
+    }
+
+    if (serverDb) {
+      const docRef = firestoreDoc(serverDb, 'merchants', merchantId);
+      const snap = await getFirestoreDoc(docRef);
+      if (snap.exists()) {
+        const data = snap.data();
+        return res.json({
+          success: true,
+          merchant: {
+            ...data,
+            id: snap.id,
+          },
+        });
+      }
+    }
+
+    return res.status(404).json({ error: '未找到指定商户档案' });
+  } catch (err: any) {
+    console.error('Error in /api/merchants/:id:', err);
+    return res.status(500).json({ error: '获取商户信息失败' });
+  }
+});
+
 // 1. AI Merchant Credibility & Sentiment Analysis API
 app.post('/api/ai/reputation-analysis', async (req, res) => {
   console.log('[API] Hit reputation-analysis with body:', req.body);
