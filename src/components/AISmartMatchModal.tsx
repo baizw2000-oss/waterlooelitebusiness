@@ -3,15 +3,15 @@ import { Merchant, AIMatchResult } from '../types';
 import { fetchSmartMatch } from '../services/aiService';
 import { 
   Sparkles, 
-  Send, 
   CheckCircle2, 
-  Building2, 
   X, 
   ArrowRight, 
   RefreshCw, 
-  ThumbsUp, 
   Lightbulb
 } from 'lucide-react';
+import { MerchantAvatar } from './MerchantAvatar';
+import { useLanguage } from '../i18n/LanguageContext';
+import { getLocalizedMerchantName, translateCategory } from '../i18n/domainTranslations';
 
 interface AISmartMatchModalProps {
   isOpen: boolean;
@@ -28,18 +28,26 @@ export const AISmartMatchModal: React.FC<AISmartMatchModalProps> = ({
   onSelectMerchant,
   onOpenMutualHelpWithNeed,
 }) => {
+  const { lang, isEn, t } = useLanguage();
   const [needText, setNeedText] = useState('');
   const [loading, setLoading] = useState(false);
   const [matchResult, setMatchResult] = useState<AIMatchResult | null>(null);
 
   if (!isOpen) return null;
 
-  const quickPresets = [
-    '寻找熟悉滑铁卢大学科研成果转化的企业级AI研发团队',
-    '寻找安省SR&ED高新技术税收抵免与加中跨境公司架构CPA',
-    '寻求大滑铁卢地区（K-W）8000平尺轻工业仓储选址与租约谈判',
-    '筹备150人名商年会，需要高规格冷餐宴会及定制主厨私房菜',
-  ];
+  const quickPresets = isEn
+    ? [
+        'Enterprise AI software engineering partner familiar with University of Waterloo commercialization',
+        'Ontario CPA firm specializing in SR&ED tax credits and cross-border corporate structuring',
+        '8,000 sq ft light-industrial warehouse leasing & negotiation in Kitchener-Waterloo',
+        'Executive gala catering and private VIP reception planning for 150+ corporate guests',
+      ]
+    : [
+        '寻找熟悉滑铁卢大学科研成果转化的企业级AI研发团队',
+        '寻找安省SR&ED高新技术税收抵免与加中跨境公司架构CPA',
+        '寻求大滑铁卢地区（K-W）8000平尺轻工业仓储选址与租约谈判',
+        '筹备150人名商年会，需要高规格冷餐宴会及定制主厨私房菜',
+      ];
 
   const handleMatch = async (textToUse?: string) => {
     const query = textToUse || needText;
@@ -51,12 +59,13 @@ export const AISmartMatchModal: React.FC<AISmartMatchModalProps> = ({
     try {
       const result = await fetchSmartMatch({
         needDescription: query.trim(),
-        category: '综合商业互助',
-        budgetOrReward: '融商汇常规互助',
+        category: t('综合商业互助', 'General Business Collaboration'),
+        budgetOrReward: t('融商汇常规互助', 'Standard WBCA Member Collaboration'),
+        lang,
         existingMembers: merchants.map((m) => ({
           id: m.id,
-          name: m.name,
-          category: m.category,
+          name: getLocalizedMerchantName(m, isEn),
+          category: translateCategory(m.category, isEn),
           desc: m.tagline,
           rating: m.credibilityScore,
         })),
@@ -71,58 +80,61 @@ export const AISmartMatchModal: React.FC<AISmartMatchModalProps> = ({
   };
 
   const recommendedMerchants = merchants.filter((m) =>
-    matchResult?.recommendedMemberIds.includes(m.id)
+    matchResult?.recommendedMemberIds.map(String).includes(String(m.id))
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center p-2.5 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in overflow-y-auto">
-      <div className="bg-slate-900 border border-cyan-500/40 rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-y-auto shadow-2xl flex flex-col text-slate-100 my-3 sm:my-8">
+    <div className="fixed inset-0 z-50 flex items-start justify-center p-2.5 sm:p-4 bg-[#0F172A]/75 backdrop-blur-md animate-in fade-in overflow-y-auto">
+      <div className="bg-white border border-[#E8E6DF] rounded-2xl max-w-2xl w-full max-h-[92vh] overflow-y-auto shadow-2xl flex flex-col text-[#0F172A] my-3 sm:my-8">
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-slate-900/95 backdrop-blur-md px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
-              <Sparkles className="w-4 h-4 animate-pulse" />
+        <div className="sticky top-0 z-10 bg-[#0F172A] text-white px-6 py-4 border-b border-[#C5A059]/30 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 rounded-lg bg-white/10 text-[#DFBA73] border border-[#C5A059]/40">
+              <Sparkles className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-white">
-                滑铁卢融商汇 AI 商机智能撮合引擎
+              <h3 className="font-editorial text-base font-bold text-white">
+                {t('滑铁卢融商汇 · 智能商机撮合引擎', 'WBCA · AI Executive Matchmaking Engine')}
               </h3>
-              <p className="text-[11px] text-cyan-400/80">
-                以自然语言语义理解，快速精准穿透280+本地认证企业供需网络
+              <p className="text-[11px] text-slate-300">
+                {t(
+                  '以语义理解精准穿透本地认证企业供需网络',
+                  'Semantic matching across verified Waterloo corporate capabilities'
+                )}
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white"
+            className="p-1.5 rounded-lg bg-white/10 text-slate-300 hover:text-white"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-6">
-          {/* Input Area */}
-          <div className="space-y-3">
-            <label className="block text-xs font-bold text-slate-300">
-              输入您的合作设想、采购意向或业务痛点：
+        <div className="p-6 space-y-6 bg-[#F7F7F5]/50">
+          <div className="space-y-3 bg-white p-5 rounded-2xl border border-[#E8E6DF] luxury-shadow">
+            <label className="block text-xs font-bold text-[#0F172A]">
+              {t('输入您的合作设想、采购意向或业务需求：', 'Describe your partnership objective, procurement need, or advisory inquiry:')}
             </label>
-            <div className="relative">
-              <textarea
-                rows={3}
-                value={needText}
-                onChange={(e) => setNeedText(e.target.value)}
-                placeholder="例如：我们是一家初创公司，准备在滑铁卢租赁新办公楼，同时希望对公立项申请安省高新技术研发退税SR&ED..."
-                className="w-full p-3.5 bg-slate-950 border border-slate-700 rounded-2xl text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 shadow-inner"
-              />
-            </div>
+            <textarea
+              rows={3}
+              value={needText}
+              onChange={(e) => setNeedText(e.target.value)}
+              placeholder={t(
+                '例如：我们是一家初创公司，准备在滑铁卢租赁新办公楼，同时希望申请安省高新技术研发退税 SR&ED...',
+                'e.g. We are scaling our Waterloo R&D office and need commercial leasing counsel alongside Ontario SR&ED tax advisory...'
+              )}
+              className="w-full p-3.5 bg-[#F7F7F5] border border-[#E8E6DF] rounded-xl text-xs sm:text-sm text-[#0F172A] placeholder-slate-400 focus:outline-none focus:border-[#C5A059]"
+            />
 
             {/* Quick Presets */}
             <div className="space-y-1.5">
-              <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
-                常用商机模板快捷填入：
+              <span className="text-[11px] text-slate-500 flex items-center gap-1">
+                <Lightbulb className="w-3.5 h-3.5 text-[#9E7425]" />
+                {t('常用商机场景快捷填入：', 'Quick Scenario Presets:')}
               </span>
               <div className="flex flex-wrap gap-1.5">
                 {quickPresets.map((preset, idx) => (
@@ -133,7 +145,7 @@ export const AISmartMatchModal: React.FC<AISmartMatchModalProps> = ({
                       setNeedText(preset);
                       handleMatch(preset);
                     }}
-                    className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition-all text-left"
+                    className="text-[11px] px-2.5 py-1.5 rounded-lg bg-[#F7F7F5] hover:bg-[#0F172A] hover:text-white text-slate-700 border border-[#E8E6DF] transition-all text-left"
                   >
                     {preset}
                   </button>
@@ -145,17 +157,17 @@ export const AISmartMatchModal: React.FC<AISmartMatchModalProps> = ({
               <button
                 onClick={() => handleMatch()}
                 disabled={loading || !needText.trim()}
-                className="px-5 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-cyan-600/30 flex items-center gap-2 transition-all disabled:opacity-50"
+                className="px-5 py-2.5 gold-gradient text-[#0F172A] font-bold text-xs rounded-xl shadow-sm flex items-center gap-2 transition-all disabled:opacity-50 hover:brightness-105"
               >
                 {loading ? (
                   <>
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    AI 语义解析匹配中...
+                    {t('正在匹配中...', 'Matching Partners...')}
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-3.5 h-3.5" />
-                    开始智能撮合推荐
+                    {t('开始精准撮合推荐', 'Find Matching Members')}
                   </>
                 )}
               </button>
@@ -164,65 +176,66 @@ export const AISmartMatchModal: React.FC<AISmartMatchModalProps> = ({
 
           {/* Results Area */}
           {matchResult && (
-            <div className="space-y-5 animate-in fade-in border-t border-slate-800 pt-5">
+            <div className="space-y-5 animate-in fade-in">
               {/* Rationale Banner */}
-              <div className="p-4 rounded-2xl bg-cyan-950/30 border border-cyan-500/40 space-y-2">
+              <div className="p-4 rounded-2xl bg-white text-[#0F172A] border border-[#C5A059]/45 space-y-2 luxury-shadow">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-cyan-300 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-cyan-400" />
-                    撮合逻辑与信誉匹配理由
+                  <span className="font-bold text-[#9E7425] flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-[#C5A059]" />
+                    {t('撮合逻辑与信誉匹配理由', 'Strategic Match Rationale')}
                   </span>
-                  <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[11px] font-bold">
-                    匹配契合度: {matchResult.confidenceScore}%
+                  <span className="text-[#9E7425] text-[11px] font-bold">
+                    {t('匹配契合度', 'Fit Confidence')}: {matchResult.confidenceScore}%
                   </span>
                 </div>
-                <p className="text-xs text-slate-200 leading-relaxed">
+                <p className="text-xs text-slate-600 leading-relaxed font-normal">
                   {matchResult.matchRationale}
                 </p>
               </div>
 
-              {/* Recommended Merchants Cards */}
+              {/* Recommended Merchants */}
               <div className="space-y-3">
-                <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider">
-                  推荐对接的滑铁卢融商汇企业 ({recommendedMerchants.length})
+                <h4 className="text-xs font-bold uppercase text-[#9E7425] tracking-wider">
+                  {t(
+                    `推荐对接的滑铁卢融商汇企业 (${recommendedMerchants.length})`,
+                    `Recommended WBCA Member Enterprises (${recommendedMerchants.length})`
+                  )}
                 </h4>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {recommendedMerchants.map((merchant) => (
                     <div
                       key={merchant.id}
-                      className="p-4 rounded-2xl bg-slate-950 border border-slate-800 hover:border-cyan-400/50 transition-all space-y-3"
+                      className="p-4 rounded-2xl bg-white border border-[#E8E6DF] hover:border-[#C5A059] transition-all space-y-3 luxury-shadow"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-xl">
-                          {merchant.logo}
-                        </div>
+                        <MerchantAvatar merchant={merchant} size="sm" showBadge={false} />
                         <div>
-                          <h5 className="text-sm font-bold text-white line-clamp-1">
-                            {merchant.name}
+                          <h5 className="font-editorial text-sm font-bold text-[#0F172A] line-clamp-1">
+                            {getLocalizedMerchantName(merchant, isEn)}
                           </h5>
-                          <p className="text-[11px] text-slate-400">
-                            {merchant.category} · 代表: {merchant.repName}
+                          <p className="text-[11px] text-slate-500">
+                            {translateCategory(merchant.category, isEn)} · {merchant.repName}
                           </p>
                         </div>
                       </div>
 
-                      <p className="text-xs text-slate-300 line-clamp-2">
+                      <p className="text-xs text-slate-600 line-clamp-2">
                         {merchant.tagline}
                       </p>
 
-                      <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 text-xs">
-                        <span className="text-emerald-400 font-semibold text-[11px]">
-                          信誉 {merchant.credibilityScore}分
+                      <div className="flex items-center justify-between pt-2 border-t border-[#E8E6DF] text-xs">
+                        <span className="text-emerald-700 font-semibold text-[11px]">
+                          {t(`信誉 ${merchant.credibilityScore} 分`, `Trust Score ${merchant.credibilityScore}`)}
                         </span>
                         <button
                           onClick={() => {
                             onClose();
                             onSelectMerchant(merchant);
                           }}
-                          className="text-cyan-300 hover:text-cyan-200 font-bold flex items-center gap-1"
+                          className="text-[#9E7425] hover:text-[#0F172A] font-bold flex items-center gap-1 transition-colors"
                         >
-                          查看主页
+                          {t('查看档案', 'View Profile')}
                           <ArrowRight className="w-3 h-3" />
                         </button>
                       </div>
@@ -232,12 +245,14 @@ export const AISmartMatchModal: React.FC<AISmartMatchModalProps> = ({
               </div>
 
               {/* Suggested Next Steps */}
-              <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 text-xs">
-                <h5 className="font-bold text-white">推荐推进步骤 (Next Steps)：</h5>
-                <ul className="space-y-1.5 text-slate-300">
+              <div className="p-4 rounded-2xl bg-white border border-[#E8E6DF] space-y-2 text-xs luxury-shadow">
+                <h5 className="font-bold text-[#0F172A]">
+                  {t('推荐推进步骤 (Next Steps)：', 'Recommended Next Steps:')}
+                </h5>
+                <ul className="space-y-1.5 text-slate-700">
                   {matchResult.suggestedNextSteps.map((step, idx) => (
                     <li key={idx} className="flex items-start gap-2">
-                      <span className="w-4 h-4 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="w-4 h-4 rounded-full bg-[#0F172A] text-[#DFBA73] text-[10px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
                         {idx + 1}
                       </span>
                       <span>{step}</span>
@@ -247,18 +262,21 @@ export const AISmartMatchModal: React.FC<AISmartMatchModalProps> = ({
               </div>
 
               {/* Quick Jump to Post Help */}
-              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-between gap-3 text-xs">
-                <span className="text-amber-200">
-                  想把此需求发布到商会互助圈悬赏，让更多商户公开报名？
+              <div className="p-4 rounded-2xl bg-white border border-[#C5A059]/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs luxury-shadow">
+                <span className="text-[#0F172A] font-medium">
+                  {t(
+                    '想把此需求发布到商会互助圈悬赏，让更多商户公开报名？',
+                    'Publish this inquiry to the Mutual Aid Board to invite additional member proposals?'
+                  )}
                 </span>
                 <button
                   onClick={() => {
                     onClose();
                     onOpenMutualHelpWithNeed(needText);
                   }}
-                  className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg whitespace-nowrap shadow"
+                  className="px-4 py-2 gold-gradient text-[#0F172A] font-bold rounded-xl whitespace-nowrap shadow-sm hover:brightness-105"
                 >
-                  去互助圈悬赏发布
+                  {t('去互助圈悬赏发布', 'Post to Mutual Aid')}
                 </button>
               </div>
             </div>

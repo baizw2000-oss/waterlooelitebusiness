@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, ThinkingLevel } from '@google/genai';
 import nodemailer from 'nodemailer';
 import { initializeApp as initFirebaseApp } from 'firebase/app';
 import {
@@ -84,14 +84,46 @@ app.get('/api/merchants/:id', async (req, res) => {
 app.post('/api/ai/reputation-analysis', async (req, res) => {
   console.log('[API] Hit reputation-analysis with body:', req.body);
   try {
-    const { merchantName, category, description, yearsInBusiness, communityFeedback, location } = req.body;
+    const { merchantName, category, description, yearsInBusiness, communityFeedback, location, lang } = req.body;
+    const isEn = lang === 'en';
 
     if (!merchantName) {
-      return res.status(400).json({ error: '商户名称不能为空' });
+      return res.status(400).json({ error: isEn ? 'Enterprise name is required' : '商户名称不能为空' });
     }
 
     if (!aiClient) {
       // High-quality deterministic fallback if no API key is available
+      if (isEn) {
+        return res.json({
+          success: true,
+          merchantName,
+          credibilityScore: 94,
+          sentiment: 'POSITIVE',
+          trustTier: 'AAA WBCA Verified Member',
+          analysisSummary: `${merchantName} demonstrates exemplary commercial standing across the Waterloo Region. Regulatory compliance, contract fulfillment, peer endorsements, and community stewardship remain consistently strong with no material disputes on record.`,
+          strengths: [
+            'Transparent local governance backed by verified commercial insurance and licensing',
+            'Strong track record of punctual fulfillment within the WBCA executive network',
+            'High client retention and Net Promoter Score across Waterloo Region peers'
+          ],
+          riskPoints: [
+            'Digital listings show minor synchronization lag; updating Google Business Profile is advised',
+            'Peak-season response queues may tighten; automated intake scheduling is recommended'
+          ],
+          googleSearchSentiment: {
+            positiveRatio: 92,
+            neutralRatio: 6,
+            negativeRatio: 2,
+            mentionFrequency: '140+ monthly regional citations'
+          },
+          actionableRecommendations: [
+            'Embed the WBCA Verified Digital Trust Seal across official corporate touchpoints',
+            'Participate in monthly WBCA Executive Roundtables to expand B2B referral pipelines',
+            'Offer curated member privileges within the WBCA Rewards & Benefits Catalog'
+          ],
+          source: 'system-evaluation'
+        });
+      }
       return res.json({
         success: true,
         merchantName,
@@ -123,7 +155,35 @@ app.post('/api/ai/reputation-analysis', async (req, res) => {
       });
     }
 
-    const prompt = `你是非营利组织【滑铁卢融商汇】(Waterloo Business Convergence Alliance)的“AI商誉与企业信誉分析专家”。
+    const prompt = isEn
+      ? `You are the Senior Corporate Reputation & Trust Auditor for the non-profit Waterloo Business Convergence Alliance (WBCA) in Waterloo Region, Ontario, Canada.
+Based on the enterprise dossier below, provide an authoritative credibility audit, sentiment pulse, and actionable executive recommendations in concise, formal English.
+
+[Enterprise Profile]
+- Enterprise Name: ${merchantName}
+- Sector: ${category || 'Local Enterprise'}
+- Operating Tenure: ${yearsInBusiness || '3+ years'}
+- Region: ${location || 'Waterloo, Ontario'}
+- Overview: ${description || 'N/A'}
+- Community Feedback Sample: ${communityFeedback || 'Reliable service, timely delivery, strong peer standing'}
+
+Return strictly valid JSON (no markdown fences) matching this exact schema:
+{
+  "credibilityScore": 95,
+  "sentiment": "POSITIVE",
+  "trustTier": "AAA WBCA Verified Member",
+  "analysisSummary": "Objective, executive summary under 120 words.",
+  "strengths": ["Strength 1", "Strength 2", "Strength 3"],
+  "riskPoints": ["Consideration 1", "Consideration 2"],
+  "googleSearchSentiment": {
+    "positiveRatio": 90,
+    "neutralRatio": 8,
+    "negativeRatio": 2,
+    "mentionFrequency": "Estimated monthly citation volume"
+  },
+  "actionableRecommendations": ["Recommendation 1", "Recommendation 2", "Recommendation 3"]
+}`
+      : `你是非营利组织【滑铁卢融商汇】(Waterloo Business Convergence Alliance)的“AI商誉与企业信誉分析专家”。
 请根据以下商户信息及在加拿大滑铁卢地区（Waterloo / Kitchener / Cambridge）的经营背景，给出深度商誉评估、舆情监测结论与可信度评级。
 
 【商户档案】
@@ -170,7 +230,40 @@ app.post('/api/ai/reputation-analysis', async (req, res) => {
     });
   } catch (err: any) {
     console.error('Error in reputation analysis (providing resilient chamber fallback):', err?.message || err);
-    const { merchantName } = req.body;
+    const { merchantName, lang } = req.body;
+    const isEn = lang === 'en';
+    if (isEn) {
+      return res.json({
+        success: true,
+        merchantName: merchantName || 'WBCA Verified Enterprise',
+        credibilityScore: 95,
+        sentiment: 'POSITIVE',
+        trustTier: 'AAA WBCA Verified Honor Member',
+        analysisSummary: `${merchantName || 'This enterprise'} maintains an exemplary commercial track record across Waterloo Region, combining disciplined governance, reliable fulfillment, and strong community trust with zero unresolved disputes.`,
+        strengths: [
+          'Transparent local operations backed by verified commercial insurance and credentials',
+          'Consistent high-rating fulfillment record across the WBCA executive network',
+          'Strong local reputation with leading client retention and peer referrals'
+        ],
+        riskPoints: [
+          'Digital touchpoints show minor update lag; synchronizing Google Business Profile is advised',
+          'High demand during peak seasons warrants advance scheduling for enterprise clients'
+        ],
+        googleSearchSentiment: {
+          positiveRatio: 92,
+          neutralRatio: 6,
+          negativeRatio: 2,
+          mentionFrequency: '140+ monthly regional citations'
+        },
+        actionableRecommendations: [
+          'Display the WBCA Verified Digital Trust Seal across official corporate materials',
+          'Join monthly WBCA Executive Roundtables to expand B2B referral channels',
+          'Contribute member-exclusive privileges to the WBCA Rewards & Benefits Catalog'
+        ],
+        source: 'chamber-expert-fallback',
+        notice: 'Live model capacity queued; seamlessly served from the WBCA Trust Knowledge Engine.'
+      });
+    }
     return res.json({
       success: true,
       merchantName: merchantName || '商会认证企业',
@@ -207,13 +300,28 @@ app.post('/api/ai/reputation-analysis', async (req, res) => {
 // 2. AI Smart Business Matchmaking API
 app.post('/api/ai/smart-match', async (req, res) => {
   try {
-    const { needDescription, category, budgetOrReward, existingMembers } = req.body;
+    const { needDescription, category, budgetOrReward, existingMembers, lang } = req.body;
+    const isEn = lang === 'en';
 
     if (!needDescription) {
-      return res.status(400).json({ error: '需求描述不能为空' });
+      return res.status(400).json({ error: isEn ? 'Business inquiry description is required' : '需求描述不能为空' });
     }
 
     if (!aiClient) {
+      if (isEn) {
+        return res.json({
+          success: true,
+          matchRationale: `Based on your Waterloo Region objective ("${needDescription}"), the WBCA Matchmaking Engine has identified premier verified corporate members best equipped in capability, regional credibility, and execution capacity.`,
+          recommendedMemberIds: [1, 3],
+          suggestedNextSteps: [
+            'Dispatch an executive introduction directly via the WBCA Mutual Aid Portal',
+            'Schedule a brief 1-on-1 briefing at the upcoming WBCA Executive Roundtable',
+            'Request Secretariat facilitation for a mutual confidentiality & scoping brief'
+          ],
+          confidenceScore: 96,
+          source: 'system-match'
+        });
+      }
       return res.json({
         success: true,
         matchRationale: `根据您在滑铁卢地区的业务需求「${needDescription}」，AI商机引擎已为您在本地商会网络中定位到了最相符的2家骨干会员企业。两家商户均经过实名认证并具备A级以上信誉，拥有深厚的本地高校及政商资源。`,
@@ -228,7 +336,29 @@ app.post('/api/ai/smart-match', async (req, res) => {
       });
     }
 
-    const prompt = `你是非营利组织【滑铁卢融商汇】的“智能商机与互助撮合AI系统”。
+    const prompt = isEn
+      ? `You are the Strategic Business Matchmaking Engine for the non-profit Waterloo Business Convergence Alliance (WBCA).
+A user submitted the following partnership or procurement requirement:
+[Requirement]: ${needDescription}
+[Category]: ${category || 'General Advisory'}
+[Incentive / Budget]: ${budgetOrReward || 'Standard Member Collaboration'}
+
+Available Verified Member Directory Summary:
+${JSON.stringify(existingMembers || [
+  { id: 1, name: 'MapleTech Innovation Lab', category: 'Tech & Innovation', desc: 'AI software engineering & enterprise data platforms', rating: 98 },
+  { id: 2, name: 'Waterloo Boyuan CPA LLP', category: 'Accounting & Legal', desc: 'Ontario corporate tax compliance, cross-border structuring & audit', rating: 97 },
+  { id: 3, name: 'Conestoga Commercial Realty Advisory', category: 'Real Estate & Dev', desc: 'Waterloo innovation corridor commercial leasing & investment', rating: 95 }
+], null, 2)}
+
+Select the 1-3 most suitable members using their exact "id" values from the provided list, explain the strategic fit, and recommend concrete next steps in formal English.
+Return strictly valid JSON (no markdown fences):
+{
+  "matchRationale": "Clear, executive explanation under 120 words.",
+  "recommendedMemberIds": [1, 2],
+  "suggestedNextSteps": ["Step 1", "Step 2", "Step 3"],
+  "confidenceScore": 95
+}`
+      : `你是非营利组织【滑铁卢融商汇】的“智能商机与互助撮合AI系统”。
 会员提出了以下互助或商业合作需求：
 【需求描述】: ${needDescription}
 【需求类型/分类】: ${category || '通用互助'}
@@ -270,7 +400,23 @@ ${JSON.stringify(existingMembers || [
     });
   } catch (err: any) {
     console.error('Error in smart match (providing resilient chamber fallback):', err?.message || err);
-    const { needDescription } = req.body;
+    const { needDescription, lang } = req.body;
+    const isEn = lang === 'en';
+    if (isEn) {
+      return res.json({
+        success: true,
+        matchRationale: `Based on your Waterloo Region objective ("${needDescription || 'Strategic Collaboration'}"), our matchmaking engine identified top-tier verified members with proven domain expertise and regional standing.`,
+        recommendedMemberIds: [1, 2],
+        suggestedNextSteps: [
+          'Initiate direct contact via the WBCA Enterprise Directory or Mutual Aid Desk',
+          'Connect in person during the next WBCA Executive Roundtable',
+          'Engage the Secretariat for optional three-party credential verification'
+        ],
+        confidenceScore: 95,
+        source: 'chamber-expert-fallback',
+        notice: 'Live model capacity queued; seamlessly routed through the WBCA Advisory Engine.'
+      });
+    }
     return res.json({
       success: true,
       matchRationale: `根据您在滑铁卢地区的业务需求「${needDescription || '综合互助'}」，AI商机匹配引擎从商会认证名录中筛选出最契合的骨干会员，具备极高技术成熟度与本地商誉积淀。`,
@@ -292,27 +438,760 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
+// 2b. Real-Time Waterloo Business News Ticker powered by Gemini + Google Search Grounding
+type NewsIndustryKey = 'all' | 'tech' | 'finance' | 'realEstate' | 'policy' | 'commerce';
+
+interface CachedNewsEntry {
+  expiresAt: number;
+  payload: any;
+}
+
+const waterlooNewsCache = new Map<string, CachedNewsEntry>();
+const inFlightNewsRequests = new Map<string, Promise<any>>();
+const WATERLOO_NEWS_TTL_MS = 30 * 60 * 1000; // 30 minutes for live search results
+const WATERLOO_FALLBACK_TTL_MS = 5 * 60 * 1000; // 5 minutes for fallback responses
+let googleSearchCooldownUntil = 0;
+let lastForcedAttemptAt = 0;
+
+const INDUSTRY_SEARCH_FOCUS: Record<
+  NewsIndustryKey,
+  { zhLabel: string; enLabel: string; searchTopic: string }
+> = {
+  all: {
+    zhLabel: '综合商情',
+    enLabel: 'All Industries',
+    searchTopic:
+      'latest business news, startups, commercial real estate, municipal grants, and local economy updates in Waterloo Region, Kitchener, Cambridge, Ontario Canada',
+  },
+  tech: {
+    zhLabel: '科技与AI',
+    enLabel: 'Tech & AI',
+    searchTopic:
+      'latest technology startups, Communitech, Velocity University of Waterloo, AI venture funding, and software engineering expansions in Waterloo Kitchener Ontario',
+  },
+  finance: {
+    zhLabel: '金融与财税',
+    enLabel: 'Finance & Tax',
+    searchTopic:
+      'latest Bank of Canada interest rates, Ontario small business financing, SR&ED tax credits, and corporate wealth management news relevant to Waterloo Ontario entrepreneurs',
+  },
+  realEstate: {
+    zhLabel: '商业地产',
+    enLabel: 'Commercial Realty',
+    searchTopic:
+      'latest commercial real estate, industrial warehouse leasing, ION transit corridor development, and retail zoning news in Waterloo Kitchener Cambridge Ontario',
+  },
+  policy: {
+    zhLabel: '政商与资助',
+    enLabel: 'Grants & Policy',
+    searchTopic:
+      'latest Ontario small business grants, Region of Waterloo economic development funding, municipal business permits, and Canada trade tariff updates for SMEs',
+  },
+  commerce: {
+    zhLabel: '零售与跨境物流',
+    enLabel: 'Retail & Logistics',
+    searchTopic:
+      'latest retail, hospitality, cross-border supply chain, and manufacturing business developments in Waterloo Region and Southwestern Ontario',
+  },
+};
+
+function getWaterlooNewsFallback(industry: NewsIndustryKey, isEn: boolean) {
+  const focus = INDUSTRY_SEARCH_FOCUS[industry] || INDUSTRY_SEARCH_FOCUS.all;
+  const nowLabel = isEn ? 'Current Briefing' : '近期动态';
+
+  const byIndustry: Record<NewsIndustryKey, { zh: any[]; en: any[] }> = {
+    all: {
+      zh: [
+        {
+          id: 'fb-all-1',
+          headline: '滑铁卢科技走廊持续吸引AI与硬科技研发中心落户，本地B2B企业服务需求上升',
+          summary: '随着滑铁卢大学产学研项目加速商业化，周边科创园区在财税合规、知识产权保护及办公空间扩租方面迎来新一轮增长。',
+          industry: '科技与AI',
+          publishedHint: nowLabel,
+          sourceTitle: 'Waterloo EDC',
+          sourceUrl: 'https://www.waterlooedc.ca/',
+        },
+        {
+          id: 'fb-all-2',
+          headline: '安省中小企业数字化与节能改造专项资助窗口开放，本地商户可申请配套补贴',
+          summary: '符合条件的滑铁卢及基奇纳独立商企可通过省市两级经济发展通道申报软件升级、门店能效改善及出海营销补助。',
+          industry: '政商与资助',
+          publishedHint: nowLabel,
+          sourceTitle: 'Region of Waterloo',
+          sourceUrl: 'https://www.regionofwaterloo.ca/',
+        },
+        {
+          id: 'fb-all-3',
+          headline: '基奇纳—滑铁卢工业与商业地产租赁保持韧性，ION轻轨沿线商铺受关注',
+          summary: '仓储物流与多功能商业综合体空置率维持低位，选址靠近交通枢纽的医疗诊所、教育及专业服务机构更受青睐。',
+          industry: '商业地产',
+          publishedHint: nowLabel,
+          sourceTitle: 'Greater KW Chamber',
+          sourceUrl: 'https://greaterkwchamber.com/',
+        },
+        {
+          id: 'fb-all-4',
+          headline: '加拿大利率走向与跨境贸易结算成本变化成为滑铁卢出口型企业年度规划重点',
+          summary: '本地制造业及跨境电商正积极评估外汇对冲与固定利率商业信贷方案，以锁定明年现金流安全垫。',
+          industry: '金融与财税',
+          publishedHint: nowLabel,
+          sourceTitle: 'Bank of Canada',
+          sourceUrl: 'https://www.bankofcanada.ca/',
+        },
+      ],
+      en: [
+        {
+          id: 'fb-all-1',
+          headline: 'Waterloo Technology Corridor Sustains AI & Deep-Tech R&D Momentum, Lifting Local B2B Demand',
+          summary: 'Continued commercialization from University of Waterloo spinouts is driving heightened demand for local corporate tax advisory, IP counsel, and flexible lab-office space.',
+          industry: 'Tech & AI',
+          publishedHint: nowLabel,
+          sourceTitle: 'Waterloo EDC',
+          sourceUrl: 'https://www.waterlooedc.ca/',
+        },
+        {
+          id: 'fb-all-2',
+          headline: 'Ontario SME Digital Modernization & Efficiency Grant Intakes Open for Waterloo Region Firms',
+          summary: 'Eligible Kitchener-Waterloo and Cambridge businesses can apply for matched provincial and regional support covering software modernization and energy retrofits.',
+          industry: 'Grants & Policy',
+          publishedHint: nowLabel,
+          sourceTitle: 'Region of Waterloo',
+          sourceUrl: 'https://www.regionofwaterloo.ca/',
+        },
+        {
+          id: 'fb-all-3',
+          headline: 'Kitchener-Waterloo Industrial & ION Corridor Commercial Leasing Demonstrates Steady Resilience',
+          summary: 'Tight industrial availability and steady transit-oriented retail absorption continue to favor healthcare, private advisory, and specialty education tenants.',
+          industry: 'Commercial Realty',
+          publishedHint: nowLabel,
+          sourceTitle: 'Greater KW Chamber',
+          sourceUrl: 'https://greaterkwchamber.com/',
+        },
+        {
+          id: 'fb-all-4',
+          headline: 'Canadian Rate Outlook & Cross-Border FX Planning Top CFO Agendas Across Waterloo Exporters',
+          summary: 'Local manufacturers and cross-border commerce operators are locking in commercial credit facilities and multi-currency hedging strategies ahead of next quarter.',
+          industry: 'Finance & Tax',
+          publishedHint: nowLabel,
+          sourceTitle: 'Bank of Canada',
+          sourceUrl: 'https://www.bankofcanada.ca/',
+        },
+      ],
+    },
+    tech: {
+      zh: [
+        {
+          id: 'fb-tech-1',
+          headline: 'Communitech 与 Velocity 孵化项目聚焦企业级 AI 与自动化软件商业落地',
+          summary: '滑铁卢本地早期研发团队正加速从科研原型转向北美垂直行业 SaaS 交付，寻求商业化试点与本地企业采购合作。',
+          industry: focus.zhLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'Communitech',
+          sourceUrl: 'https://communitech.ca/',
+        },
+        {
+          id: 'fb-tech-2',
+          headline: '滑铁卢大学 Co-op 工程与AI人才供给充沛，本地科技中小企业扩招研发岗位',
+          summary: '本地软件与先进制造企业结合安省实习雇主税收抵免政策，持续优化高性价比技术团队配置。',
+          industry: focus.zhLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'Waterloo EDC',
+          sourceUrl: 'https://www.waterlooedc.ca/',
+        },
+        {
+          id: 'fb-tech-3',
+          headline: 'SR&ED 研发税收抵免合规审查趋严，科技创始人加强研发工时与技术文档留痕',
+          summary: '财务与技术顾问建议科创企业在季度节点同步整理实验记录，确保政府研发退税顺利核准。',
+          industry: focus.zhLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'Government of Canada',
+          sourceUrl: 'https://www.canada.ca/',
+        },
+      ],
+      en: [
+        {
+          id: 'fb-tech-1',
+          headline: 'Communitech & Velocity Cohorts Accelerate Enterprise AI and Industrial Automation Pilots',
+          summary: 'Waterloo founders are actively partnering with regional mid-market firms for commercial validation, SaaS deployment, and co-development agreements.',
+          industry: focus.enLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'Communitech',
+          sourceUrl: 'https://communitech.ca/',
+        },
+        {
+          id: 'fb-tech-2',
+          headline: 'Waterloo Co-op Engineering Pipeline Helps Local SMEs Scale Technical Capacity Cost-Effectively',
+          summary: 'Regional firms are pairing Ontario Co-op Education Tax Credits with University of Waterloo talent cycles to expand software and AI delivery.',
+          industry: focus.enLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'Waterloo EDC',
+          sourceUrl: 'https://www.waterlooedc.ca/',
+        },
+        {
+          id: 'fb-tech-3',
+          headline: 'SR&ED Documentation Standards Highlighted for Waterloo Region R&D-Focused Founders',
+          summary: 'Tax specialists advise local software and hardware ventures to maintain contemporaneous engineering logs to safeguard federal R&D tax credits.',
+          industry: focus.enLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'Government of Canada',
+          sourceUrl: 'https://www.canada.ca/',
+        },
+      ],
+    },
+    finance: {
+      zh: [
+        {
+          id: 'fb-fin-1',
+          headline: '加拿大央行利率政策窗口期，滑铁卢企业主重新评估商业贷款固定与浮动结构',
+          summary: '金融顾问建议本地高成长企业在扩张设备与商业地产融资时对比锁定年期，兼顾现金流灵活性与融资成本。',
+          industry: focus.zhLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'Bank of Canada',
+          sourceUrl: 'https://www.bankofcanada.ca/',
+        },
+        {
+          id: 'fb-fin-2',
+          headline: '安省中小企业小规模企业税率门槛与股息分配合规规划受本地华人企业主高度关注',
+          summary: '岁末年初交接之际，合理规划控股公司结构、家庭信托与企业年金有助于提升税后留存资本效率。',
+          industry: focus.zhLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'CPA Ontario',
+          sourceUrl: 'https://www.cpaontario.ca/',
+        },
+        {
+          id: 'fb-fin-3',
+          headline: 'BDC 与安省商业信贷协同支持出口及本地扩张型中小企业流动资金',
+          summary: '具备稳定营收与三年财务报表的滑铁卢企业可申请低息设备融资与营运资金授信。',
+          industry: focus.zhLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'BDC Canada',
+          sourceUrl: 'https://www.bdc.ca/',
+        },
+      ],
+      en: [
+        {
+          id: 'fb-fin-1',
+          headline: 'Bank of Canada Rate Trajectory Prompts Waterloo SMEs to Rebalance Fixed vs. Variable Debt',
+          summary: 'Regional financial advisors recommend reviewing equipment and commercial mortgage terms to preserve cash-flow predictability ahead of expansion.',
+          industry: focus.enLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'Bank of Canada',
+          sourceUrl: 'https://www.bankofcanada.ca/',
+        },
+        {
+          id: 'fb-fin-2',
+          headline: 'Ontario Small Business Deduction & Corporate Succession Planning Gain Traction Among Owners',
+          summary: 'Chartered accountants highlight holding company optimization and corporate-owned insurance strategies for long-term wealth preservation.',
+          industry: focus.enLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'CPA Ontario',
+          sourceUrl: 'https://www.cpaontario.ca/',
+        },
+        {
+          id: 'fb-fin-3',
+          headline: 'BDC Commercial Working-Capital & Equipment Lines Support Waterloo Scale-Ups',
+          summary: 'Established Waterloo Region enterprises with audited statements are leveraging federal development financing for automation upgrades.',
+          industry: focus.enLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'BDC Canada',
+          sourceUrl: 'https://www.bdc.ca/',
+        },
+      ],
+    },
+    realEstate: {
+      zh: [
+        {
+          id: 'fb-re-1',
+          headline: '滑铁卢地区高新园区与 401 高速沿线轻工业及仓储用地需求维持稳健',
+          summary: '剑桥与基奇纳物流园区净租金表现坚挺，配备装卸平台的中小型柔性仓库尤为抢手。',
+          industry: focus.zhLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'Waterloo EDC',
+          sourceUrl: 'https://www.waterlooedc.ca/',
+        },
+        {
+          id: 'fb-re-2',
+          headline: 'Uptown Waterloo 与 Downtown Kitchener 沿线混合用途商铺持续升级',
+          summary: '轻轨沿线高密度住宅交付带动餐饮精品店、牙科诊所及高端私人理财工作室的社区商业租赁需求。',
+          industry: focus.zhLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'City of Waterloo',
+          sourceUrl: 'https://www.waterloo.ca/',
+        },
+        {
+          id: 'fb-re-3',
+          headline: '安省商业租约续约谈判中租户装修补贴 (TI Allowance) 与净租赁条款成关注焦点',
+          summary: '本地商业地产经纪建议中小商户在签订五年期租约前，由专业律师审阅 TMI 费用上限与转租条款。',
+          industry: focus.zhLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'Greater KW Chamber',
+          sourceUrl: 'https://greaterkwchamber.com/',
+        },
+      ],
+      en: [
+        {
+          id: 'fb-re-1',
+          headline: 'Highway 401 & Waterloo Industrial Parks Maintain Tight Availability for Light-Flex Warehousing',
+          summary: 'Cambridge and Kitchener logistics corridors continue seeing steady absorption for 5,000–25,000 sq. ft. commercial and distribution bays.',
+          industry: focus.enLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'Waterloo EDC',
+          sourceUrl: 'https://www.waterlooedc.ca/',
+        },
+        {
+          id: 'fb-re-2',
+          headline: 'Uptown Waterloo & Downtown Kitchener Mixed-Use Retail Draws Medical & Advisory Tenants',
+          summary: 'Transit-corridor residential density is fueling demand for boutique hospitality, dental clinics, and private wealth offices.',
+          industry: focus.enLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'City of Waterloo',
+          sourceUrl: 'https://www.waterloo.ca/',
+        },
+        {
+          id: 'fb-re-3',
+          headline: 'Tenant Improvement Allowances & TMI Caps Take Center Stage in Commercial Lease Renewals',
+          summary: 'Commercial brokers advise Waterloo operators to negotiate clear additional-rent caps and sublease flexibility on multi-year commitments.',
+          industry: focus.enLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'Greater KW Chamber',
+          sourceUrl: 'https://greaterkwchamber.com/',
+        },
+      ],
+    },
+    policy: {
+      zh: [
+        {
+          id: 'fb-pol-1',
+          headline: '滑铁卢地区经济发展署发布制造业与绿色转型投资引导及落地服务清单',
+          summary: '拟在滑铁卢三市扩建厂房或研发中心的企业可申请“一站式市政审批加速”及本地供应链对接支持。',
+          industry: focus.zhLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'Region of Waterloo',
+          sourceUrl: 'https://www.regionofwaterloo.ca/',
+        },
+        {
+          id: 'fb-pol-2',
+          headline: '安省技能发展基金 (SDF) 与企业员工培训补贴鼓励本地雇主提升数字化技能',
+          summary: '雇主可联合本地院校为在职员工申请 AI 工具应用及精益生产专项培训资助。',
+          industry: focus.zhLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'Government of Ontario',
+          sourceUrl: 'https://www.ontario.ca/',
+        },
+        {
+          id: 'fb-pol-3',
+          headline: '加美跨境贸易关税与原产地证明合规指引更新，提醒滑铁卢出口商核对 HS 编码',
+          summary: '进出口商户可通过商会财税法务会员复核 USMCA 原产地规则，降低边境清关延误风险。',
+          industry: focus.zhLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'Global Affairs Canada',
+          sourceUrl: 'https://www.international.gc.ca/',
+        },
+      ],
+      en: [
+        {
+          id: 'fb-pol-1',
+          headline: 'Region of Waterloo Streamlines Permitting Concierge for Manufacturing & Clean-Tech Expansions',
+          summary: 'Firms expanding facilities across Waterloo, Kitchener, or Cambridge can access coordinated municipal site-plan and utility review.',
+          industry: focus.enLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'Region of Waterloo',
+          sourceUrl: 'https://www.regionofwaterloo.ca/',
+        },
+        {
+          id: 'fb-pol-2',
+          headline: 'Ontario Skills Development & Workforce Training Grants Support Local Employer Upskilling',
+          summary: 'Waterloo employers partnering with regional colleges can offset training costs for AI adoption, cybersecurity, and skilled trades.',
+          industry: focus.enLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'Government of Ontario',
+          sourceUrl: 'https://www.ontario.ca/',
+        },
+        {
+          id: 'fb-pol-3',
+          headline: 'Canada-US Rules of Origin & Tariff Compliance Briefings Advised for Regional Exporters',
+          summary: 'Cross-border merchants are reviewing CUSMA/USMCA origin documentation and HS classifications to prevent customs delays.',
+          industry: focus.enLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'Global Affairs Canada',
+          sourceUrl: 'https://www.international.gc.ca/',
+        },
+      ],
+    },
+    commerce: {
+      zh: [
+        {
+          id: 'fb-com-1',
+          headline: '滑铁卢大学与劳里埃大学周边生活消费及多元餐饮需求保持高活跃度',
+          summary: '结合线上即时预订与会员积分体系的本地餐饮与精品零售商户，复购率显著高于传统单一门店模式。',
+          industry: focus.zhLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'Explore Waterloo',
+          sourceUrl: 'https://explorewaterloo.ca/',
+        },
+        {
+          id: 'fb-com-2',
+          headline: '南安大略冷链与跨境电商前置仓协同网络加速，缩短多伦多—滑铁卢同日配送时效',
+          summary: '本地零售及食品供应链企业正通过共享干线运力降低单票履约成本。',
+          industry: focus.zhLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'Greater KW Chamber',
+          sourceUrl: 'https://greaterkwchamber.com/',
+        },
+        {
+          id: 'fb-com-3',
+          headline: '本地品牌加强 Google Business Profile 与双语数字名片建设以获取精准自然流量',
+          summary: '具备权威第三方机构背书的独立商户主页在本地搜索转化率上表现突出。',
+          industry: focus.zhLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'WBCA Advisory',
+          sourceUrl: 'https://www.waterloo.ca/',
+        },
+      ],
+      en: [
+        {
+          id: 'fb-com-1',
+          headline: 'University District Hospitality & Specialty Retail Leverage Integrated Loyalty Programs',
+          summary: 'Waterloo retailers combining bilingual digital reservations with member credit perks are driving stronger repeat customer retention.',
+          industry: focus.enLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'Explore Waterloo',
+          sourceUrl: 'https://explorewaterloo.ca/',
+        },
+        {
+          id: 'fb-com-2',
+          headline: 'Southwestern Ontario Shared Fulfillment & GTA-Waterloo Same-Day Freight Networks Expand',
+          summary: 'Regional wholesalers and specialty grocers are consolidating cross-corridor cold-chain routes to lower unit delivery costs.',
+          industry: focus.enLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'Greater KW Chamber',
+          sourceUrl: 'https://greaterkwchamber.com/',
+        },
+        {
+          id: 'fb-com-3',
+          headline: 'Local Search Authority & Verified Directory Citations Boost High-Intent Inbound Inquiries',
+          summary: 'Independent Waterloo service providers pairing updated Google Business Profiles with chamber endorsements report higher inquiry conversion.',
+          industry: focus.enLabel,
+          publishedHint: nowLabel,
+          sourceTitle: 'City of Waterloo',
+          sourceUrl: 'https://www.waterloo.ca/',
+        },
+      ],
+    },
+  };
+
+  const selectedList = byIndustry[industry]?.[isEn ? 'en' : 'zh'] || byIndustry.all[isEn ? 'en' : 'zh'];
+  const sources = Array.from(
+    new Map(
+      selectedList
+        .filter((item) => item.sourceUrl && item.sourceTitle)
+        .map((item) => [item.sourceUrl, { title: item.sourceTitle, uri: item.sourceUrl }])
+    ).values()
+  );
+
+  return {
+    items: selectedList,
+    groundingSources: sources,
+  };
+}
+
+function isQuotaOrRateLimitError(err: any): boolean {
+  const status = err?.status || err?.code || err?.error?.code;
+  const msg = String(err?.message || err?.error?.message || '').toLowerCase();
+  return (
+    status === 429 ||
+    msg.includes('429') ||
+    msg.includes('resource_exhausted') ||
+    msg.includes('quota') ||
+    msg.includes('rate limit')
+  );
+}
+
+app.get('/api/news/waterloo-business', async (req, res) => {
+  const rawIndustry = String(req.query?.industry || 'all');
+  const industry: NewsIndustryKey = (
+    ['all', 'tech', 'finance', 'realEstate', 'policy', 'commerce'].includes(rawIndustry)
+      ? rawIndustry
+      : 'all'
+  ) as NewsIndustryKey;
+  const isEn = req.query?.lang === 'en';
+  const lang: 'zh' | 'en' = isEn ? 'en' : 'zh';
+  const forceRefresh = req.query?.refresh === '1' || req.query?.refresh === 'true';
+  const cacheKey = `${lang}:${industry}`;
+  const now = Date.now();
+
+  const cached = waterlooNewsCache.get(cacheKey);
+  if (!forceRefresh && cached && cached.expiresAt > now) {
+    return res.json({
+      ...cached.payload,
+      cached: true,
+    });
+  }
+
+  const focus = INDUSTRY_SEARCH_FOCUS[industry];
+
+  const buildFallbackPayload = (quotaLimited: boolean) => {
+    const fallback = getWaterlooNewsFallback(industry, isEn);
+    return {
+      success: true,
+      industry,
+      lang,
+      updatedAt: new Date().toISOString(),
+      cached: false,
+      source: 'chamber-briefing-fallback',
+      quotaLimited,
+      items: fallback.items,
+      groundingSources: fallback.groundingSources,
+      notice: quotaLimited
+        ? isEn
+          ? 'Live Google Search quota reached (429). Showing curated Waterloo sector intelligence — select a billing-enabled API key in Settings > Secrets for higher search limits.'
+          : '实时 Google Search 配额已达上限，当前展示滑铁卢精选行业简报；如需更高并发额度，请在 Settings > Secrets 中绑定计费 API 密钥。'
+        : isEn
+          ? 'Showing curated Waterloo Region sector intelligence.'
+          : '当前展示滑铁卢融商汇精选行业简报。',
+    };
+  };
+
+  if (!aiClient) {
+    return res.json(buildFallbackPayload(false));
+  }
+
+  // Respect cooldown after a 429 unless user manually clicks Refresh after 15s
+  const cooldownActive = googleSearchCooldownUntil > now;
+  if (cooldownActive && (!forceRefresh || now - lastForcedAttemptAt < 15000)) {
+    const fallbackPayload = buildFallbackPayload(true);
+    waterlooNewsCache.set(cacheKey, {
+      expiresAt: now + WATERLOO_FALLBACK_TTL_MS,
+      payload: fallbackPayload,
+    });
+    return res.json(fallbackPayload);
+  }
+
+  if (forceRefresh) {
+    lastForcedAttemptAt = now;
+  }
+
+  // Deduplicate concurrent fetches for the same industry + language
+  const existingPromise = inFlightNewsRequests.get(cacheKey);
+  if (existingPromise) {
+    try {
+      const sharedPayload = await existingPromise;
+      return res.json(sharedPayload);
+    } catch {
+      return res.json(buildFallbackPayload(false));
+    }
+  }
+
+  const fetchTask = (async () => {
+    const currentDate = new Date().toISOString().slice(0, 10);
+    const prompt = isEn
+      ? `Today's date is ${currentDate}. Use Google Search to find 5 real, recent, verifiable news updates or economic developments specifically relevant to entrepreneurs and business owners in Waterloo Region (Waterloo, Kitchener, Cambridge, Ontario, Canada) focused on: ${focus.searchTopic}.
+
+Return strictly valid JSON (no markdown fences, no commentary outside JSON) in this exact shape:
+{
+  "items": [
+    {
+      "headline": "Concise executive headline under 110 characters",
+      "summary": "1-2 sentence practical takeaway for local Waterloo entrepreneurs (max 220 characters)",
+      "industry": "Short sector label such as Tech & AI, Finance & Tax, Commercial Realty, Grants & Policy, or Retail & Logistics",
+      "publishedHint": "Publication timeframe such as Nov 2026 or Recent",
+      "sourceTitle": "Publisher name from search results"
+    }
+  ]
+}
+Requirements:
+- Base every item strictly on real facts returned by Google Search; never invent companies, figures, or grants.
+- Write strictly in crisp, professional English.`
+      : `今天是 ${currentDate}。请使用 Google Search 检索 5 条真实、近期且与加拿大安省滑铁卢地区（Waterloo、Kitchener、Cambridge 及安省政策）企业家和本地商户高度相关的实时商业资讯，重点聚焦：${focus.searchTopic}。
+
+请严格输出合法的 JSON 格式（不要包含 markdown 代码块标记 \`\`\`，不要输出 JSON 以外的解释文字），结构如下：
+{
+  "items": [
+    {
+      "headline": "精炼专业的中文商业快讯标题（38字以内）",
+      "summary": "1-2句面向滑铁卢本地企业主与创业者的核心影响与实务解读（90字以内）",
+      "industry": "简洁行业分类（如：科技与AI、金融与财税、商业地产、政商与资助、零售与跨境物流）",
+      "publishedHint": "发布时间参考（如：2026年11月 或 近期）",
+      "sourceTitle": "检索到的权威新闻或机构来源名称"
+    }
+  ]
+}
+要求：
+- 每条快讯必须严格依据 Google Search 检索到的真实信息，严禁编造企业、数据或补贴项目。
+- 全部标题与摘要必须使用地道、专业、简洁的简体中文撰写（专有名词如 Communitech、SR&ED、Waterloo EDC 可保留英文）。`;
+
+    const runGroundedQuery = async (modelName: string) => {
+      return await aiClient!.models.generateContent({
+        model: modelName,
+        contents: prompt,
+        config: {
+          tools: [{ googleSearch: {} }],
+          ...(modelName === 'gemini-4-hydrogen'
+            ? { thinkingConfig: { thinkingLevel: ThinkingLevel.LOW } }
+            : {}),
+        },
+      });
+    };
+
+    let response;
+    try {
+      response = await runGroundedQuery('gemini-4-hydrogen');
+    } catch (primaryErr: any) {
+      if (isQuotaOrRateLimitError(primaryErr)) {
+        // Retry once with lightweight model in case quota is per-model
+        try {
+          response = await runGroundedQuery('gemini-3.1-flash-lite');
+        } catch (secondaryErr: any) {
+          if (isQuotaOrRateLimitError(secondaryErr)) {
+            googleSearchCooldownUntil = Date.now() + WATERLOO_FALLBACK_TTL_MS;
+          }
+          throw secondaryErr;
+        }
+      } else {
+        throw primaryErr;
+      }
+    }
+
+    const rawText = (response.text || '').trim();
+    const cleanedJson = rawText
+      .replace(/^```json\s*/i, '')
+      .replace(/^```\s*/i, '')
+      .replace(/\s*```$/i, '')
+      .trim();
+
+    let parsedObj: any = null;
+    try {
+      parsedObj = JSON.parse(cleanedJson);
+    } catch {
+      const jsonMatch = cleanedJson.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        parsedObj = JSON.parse(jsonMatch[0]);
+      }
+    }
+
+    const rawChunks = (response.candidates?.[0]?.groundingMetadata?.groundingChunks || []) as any[];
+    const groundingSources = rawChunks
+      .map((c) => ({
+        title: String(c?.web?.title || '').trim(),
+        uri: String(c?.web?.uri || '').trim(),
+      }))
+      .filter((s) => Boolean(s.uri))
+      .filter((s, idx, arr) => arr.findIndex((x) => x.uri === s.uri) === idx)
+      .slice(0, 8);
+
+    const searchQueries = (response.candidates?.[0]?.groundingMetadata?.webSearchQueries || []) as string[];
+
+    const rawItems = Array.isArray(parsedObj?.items) ? parsedObj.items : [];
+    if (rawItems.length === 0) {
+      throw new Error('No news items returned from Search grounding');
+    }
+
+    const items = rawItems
+      .slice(0, 6)
+      .map((item: any, idx: number) => {
+        const sourceTitle = String(item?.sourceTitle || '').trim();
+        const matchedSource =
+          groundingSources.find(
+            (s) =>
+              sourceTitle &&
+              (s.title.toLowerCase().includes(sourceTitle.toLowerCase()) ||
+                sourceTitle.toLowerCase().includes(s.title.toLowerCase()))
+          ) ||
+          groundingSources[idx % Math.max(1, groundingSources.length)] ||
+          null;
+
+        return {
+          id: `news-${industry}-${Date.now()}-${idx}`,
+          headline: String(item?.headline || '').trim(),
+          summary: String(item?.summary || '').trim(),
+          industry: String(item?.industry || (isEn ? focus.enLabel : focus.zhLabel)).trim(),
+          publishedHint: String(item?.publishedHint || (isEn ? 'Recent' : '近期')).trim(),
+          sourceTitle: sourceTitle || matchedSource?.title || (isEn ? 'Google Search Source' : 'Google 实时检索'),
+          sourceUrl: matchedSource?.uri || undefined,
+        };
+      })
+      .filter((item: any) => Boolean(item.headline));
+
+    if (items.length === 0) {
+      throw new Error('Parsed news items empty');
+    }
+
+    const payload = {
+      success: true,
+      industry,
+      lang,
+      updatedAt: new Date().toISOString(),
+      cached: false,
+      source: 'google-search-grounding',
+      quotaLimited: false,
+      items,
+      groundingSources,
+      searchQueries,
+    };
+
+    waterlooNewsCache.set(cacheKey, {
+      expiresAt: Date.now() + WATERLOO_NEWS_TTL_MS,
+      payload,
+    });
+
+    return payload;
+  })();
+
+  inFlightNewsRequests.set(cacheKey, fetchTask);
+
+  try {
+    const payload = await fetchTask;
+    return res.json(payload);
+  } catch (err: any) {
+    const quotaHit = isQuotaOrRateLimitError(err);
+    console.info(
+      `[WBCA News Ticker] Serving curated briefing fallback (${quotaHit ? 'quota_429_cooldown' : 'transient_fallback'})`
+    );
+    const fallbackPayload = buildFallbackPayload(quotaHit);
+    waterlooNewsCache.set(cacheKey, {
+      expiresAt: Date.now() + WATERLOO_FALLBACK_TTL_MS,
+      payload: fallbackPayload,
+    });
+    return res.json(fallbackPayload);
+  } finally {
+    inFlightNewsRequests.delete(cacheKey);
+  }
+});
+
 // 3. AI Sentiment & Community Pulse (GET & POST)
 app.all('/api/ai/sentiment-monitor', async (req, res) => {
   try {
-    const { timeRange } = req.body;
+    const isEn = req.body?.lang === 'en' || req.query?.lang === 'en';
 
-    const data = {
-      overallHealthScore: 94.6,
-      monthlyActiveMembers: '286 家企业',
-      mutualHelpFulfillmentRate: '98.2%',
-      sentimentDistribution: {
-        positive: 88,
-        neutral: 9,
-        attention: 3
-      },
-      topCommunityKeywords: ['科技协同', '高管税务', '商业地产', '名商积分', '合规出海', 'UW校友创业'],
-      aiInsight: '滑铁卢融商汇近期商业互助情绪高度繁荣，尤其在产融科技协同与高端专业服务板块展现出强劲的双向赋能需求。舆情整体呈高度信任与健康态势。'
-    };
+    const data = isEn
+      ? {
+          overallHealthScore: 94.6,
+          monthlyActiveMembers: '286 Enterprises',
+          mutualHelpFulfillmentRate: '98.2%',
+          sentimentDistribution: {
+            positive: 88,
+            neutral: 9,
+            attention: 3
+          },
+          topCommunityKeywords: ['Tech Synergy', 'Executive Tax', 'Commercial Realty', 'Trust Credits', 'Cross-Border Compliance', 'UW Ventures'],
+          aiInsight: 'Collaboration sentiment across the Waterloo Business Convergence Alliance remains exceptionally strong, with growing two-way demand in technology commercialization and executive advisory.'
+        }
+      : {
+          overallHealthScore: 94.6,
+          monthlyActiveMembers: '286 家企业',
+          mutualHelpFulfillmentRate: '98.2%',
+          sentimentDistribution: {
+            positive: 88,
+            neutral: 9,
+            attention: 3
+          },
+          topCommunityKeywords: ['科技协同', '高管税务', '商业地产', '名商积分', '合规出海', 'UW校友创业'],
+          aiInsight: '滑铁卢融商汇近期商业互助情绪高度繁荣，尤其在产融科技协同与高端专业服务板块展现出强劲的双向赋能需求。舆情整体呈高度信任与健康态势。'
+        };
 
     return res.json({ success: true, ...data });
   } catch (err: any) {
-    return res.status(500).json({ error: '舆情分析获取失败' });
+    return res.status(500).json({ error: 'Sentiment monitor unavailable' });
   }
 });
 
@@ -389,6 +1268,7 @@ async function sendOrLogEmail({
   type,
   title,
   snippet,
+  lang = 'zh',
 }: {
   to?: string[];
   bcc?: string[];
@@ -398,12 +1278,14 @@ async function sendOrLogEmail({
   type: 'MERCHANT_APPLICATION' | 'CHAMBER_OPPORTUNITY' | 'CUSTOM_BROADCAST';
   title: string;
   snippet: string;
+  lang?: 'zh' | 'en';
 }) {
+  const isEn = lang === 'en';
   const id = `mail-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
   const allRecipients = Array.from(new Set([...(to || []), ...(bcc || [])])).filter(Boolean);
 
   let status: 'SENT_VIA_SMTP' | 'LOGGED_AND_QUEUED' | 'FAILED' = 'LOGGED_AND_QUEUED';
-  let note = '已记录至商会发信中枢';
+  let note = isEn ? 'Recorded in the WBCA Mail Dispatch Hub' : '已记录至商会发信中枢';
 
   if (notificationConfig.smtpHost && notificationConfig.smtpUser && notificationConfig.smtpPass) {
     try {
@@ -427,14 +1309,20 @@ async function sendOrLogEmail({
       });
 
       status = 'SENT_VIA_SMTP';
-      note = `已通过官方 SMTP (${notificationConfig.smtpHost}) 成功投递至 ${allRecipients.length} 个邮箱`;
+      note = isEn
+        ? `Delivered via official SMTP (${notificationConfig.smtpHost}) to ${allRecipients.length} recipient(s)`
+        : `已通过官方 SMTP (${notificationConfig.smtpHost}) 成功投递至 ${allRecipients.length} 个邮箱`;
     } catch (err: any) {
       console.error('[SMTP Send Error]:', err?.message || err);
       status = 'FAILED';
-      note = `SMTP发送失败: ${err?.message || '未知错误'}`;
+      note = isEn
+        ? `SMTP delivery failed: ${err?.message || 'Unknown error'}`
+        : `SMTP发送失败: ${err?.message || '未知错误'}`;
     }
   } else {
-    note = `系统已生成商会官方公函，并已入库发件箱（管理员可在后台查看预览，或使用一键客户端群发）`;
+    note = isEn
+      ? 'Official WBCA dispatch generated and archived in the Outbox (administrators may preview or trigger one-click client broadcast).'
+      : '系统已生成商会官方公函，并已入库发件箱（管理员可在后台查看预览，或使用一键客户端群发）';
   }
 
   const logItem: EmailLogItem = {
@@ -472,6 +1360,7 @@ app.get('/api/notifications/config', (_req, res) => {
 
 // 4b. Update Admin Notification Emails (Save to memory & Firestore)
 app.post('/api/notifications/config', async (req, res) => {
+  const isEn = req.body?.lang === 'en';
   try {
     const { adminEmails } = req.body;
     if (Array.isArray(adminEmails)) {
@@ -493,15 +1382,18 @@ app.post('/api/notifications/config', async (req, res) => {
     return res.json({
       success: true,
       adminEmails: notificationConfig.adminEmails,
-      message: '管理员通知邮箱列表更新成功并已同步至云端',
+      message: isEn
+        ? 'Admin notification recipients updated and synced to cloud storage'
+        : '管理员通知邮箱列表更新成功并已同步至云端',
     });
   } catch (err: any) {
-    return res.status(500).json({ error: '配置更新失败' });
+    return res.status(500).json({ error: isEn ? 'Failed to update configuration' : '配置更新失败' });
   }
 });
 
 // 4c. Update SMTP Server Configuration (Save directly into Firestore central database)
 app.post('/api/notifications/smtp-config', async (req, res) => {
+  const isEn = req.body?.lang === 'en';
   try {
     const { smtpHost, smtpPort, smtpUser, smtpPass, smtpFrom } = req.body;
 
@@ -532,7 +1424,9 @@ app.post('/api/notifications/smtp-config', async (req, res) => {
 
     return res.json({
       success: true,
-      message: 'SMTP 发信配置已成功保存至 Google Cloud Firestore 中央数据库',
+      message: isEn
+        ? 'SMTP dispatch configuration saved to Google Cloud Firestore central database'
+        : 'SMTP 发信配置已成功保存至 Google Cloud Firestore 中央数据库',
       config: {
         smtpHost: notificationConfig.smtpHost,
         smtpPort: notificationConfig.smtpPort,
@@ -546,12 +1440,17 @@ app.post('/api/notifications/smtp-config', async (req, res) => {
     });
   } catch (err: any) {
     console.error('Failed to update SMTP config in Firestore:', err);
-    return res.status(500).json({ error: `保存失败: ${err?.message || '未知数据库错误'}` });
+    return res.status(500).json({
+      error: isEn
+        ? `Save failed: ${err?.message || 'Unknown database error'}`
+        : `保存失败: ${err?.message || '未知数据库错误'}`,
+    });
   }
 });
 
 // 4d. One-Click Test SMTP Outgoing Email
 app.post('/api/notifications/test-smtp', async (req, res) => {
+  const isEn = req.body?.lang === 'en';
   try {
     const { targetEmail } = req.body;
     const recipient = targetEmail || notificationConfig.adminEmails[0] || 'baizw2000@gmail.com';
@@ -559,7 +1458,9 @@ app.post('/api/notifications/test-smtp', async (req, res) => {
     if (!notificationConfig.smtpHost || !notificationConfig.smtpUser || !notificationConfig.smtpPass) {
       return res.status(400).json({
         success: false,
-        error: 'SMTP配置不完整：请先在下方表单中填写并保存「SMTP服务器」、「发信账号」及「应用授权码/密码」',
+        error: isEn
+          ? 'Incomplete SMTP configuration: please fill in and save "SMTP Host", "Sender Account", and "App Password / Key" below first.'
+          : 'SMTP配置不完整：请先在下方表单中填写并保存「SMTP服务器」、「发信账号」及「应用授权码/密码」',
       });
     }
 
@@ -579,9 +1480,33 @@ app.post('/api/notifications/test-smtp', async (req, res) => {
     await transporter.verify();
 
     // Send actual test verification email
-    const subject = '【滑铁卢融商汇】发信邮局 (SMTP) 云端测试邮件 · 验证成功';
-    const text = `尊贵的商会管理员：\n\n这是一封来自【滑铁卢融商汇】数字化中枢的测试邮件。\n\n恭喜！您的企业/商会发信邮箱与 Google Cloud Firestore 云端数据库已成功联通：\n- SMTP 主机：${notificationConfig.smtpHost}\n- SMTP 端口：${notificationConfig.smtpPort}\n- 发信邮箱：${notificationConfig.smtpUser}\n- 测试接收：${recipient}\n- 校验时间：${new Date().toLocaleString('zh-CN')}\n\n未来每当有新商户提交入驻申请、或会员发布商机互助悬赏时，系统将使用此官方邮箱自动派发通知！\n\n滑铁卢融商汇秘书处`;
-    const html = `
+    const verifiedAt = new Date().toLocaleString(isEn ? 'en-CA' : 'zh-CN');
+    const subject = isEn
+      ? '[WBCA] Cloud SMTP Mail Dispatch Test · Verification Successful'
+      : '【滑铁卢融商汇】发信邮局 (SMTP) 云端测试邮件 · 验证成功';
+    const text = isEn
+      ? `Dear WBCA Administrator,\n\nThis is a verification email from the Waterloo Business Convergence Alliance (WBCA) Digital Hub.\n\nYour official SMTP mail server is now connected with Google Cloud Firestore:\n- SMTP Host: ${notificationConfig.smtpHost}\n- SMTP Port: ${notificationConfig.smtpPort}\n- Sender Account: ${notificationConfig.smtpUser}\n- Test Recipient: ${recipient}\n- Verified At: ${verifiedAt}\n\nGoing forward, all new merchant listing applications and member opportunity broadcasts will be dispatched automatically via this official channel.\n\nWBCA Secretariat`
+      : `尊贵的商会管理员：\n\n这是一封来自【滑铁卢融商汇】数字化中枢的测试邮件。\n\n恭喜！您的企业/商会发信邮箱与 Google Cloud Firestore 云端数据库已成功联通：\n- SMTP 主机：${notificationConfig.smtpHost}\n- SMTP 端口：${notificationConfig.smtpPort}\n- 发信邮箱：${notificationConfig.smtpUser}\n- 测试接收：${recipient}\n- 校验时间：${verifiedAt}\n\n未来每当有新商户提交入驻申请、或会员发布商机互助悬赏时，系统将使用此官方邮箱自动派发通知！\n\n滑铁卢融商汇秘书处`;
+    const html = isEn
+      ? `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 24px; border-radius: 12px; border: 1px solid #10b981; max-width: 600px;">
+        <h2 style="color: #34d399; margin: 0 0 12px 0;">🎉 WBCA · SMTP Mail Hub Verification Successful</h2>
+        <p style="color: #cbd5e1; font-size: 14px; line-height: 1.6;">
+          Your official WBCA SMTP configuration is connected to <strong>Google Cloud Firestore</strong> and passed end-to-end delivery testing.
+        </p>
+        <div style="background-color: #1e293b; padding: 14px; border-radius: 8px; margin: 16px 0; font-size: 13px; font-family: monospace;">
+          <div>📡 SMTP Host: <strong style="color: #38bdf8;">${notificationConfig.smtpHost}</strong></div>
+          <div>🔌 Port: <strong style="color: #38bdf8;">${notificationConfig.smtpPort} (${notificationConfig.smtpPort === 465 ? 'SSL' : 'TLS'})</strong></div>
+          <div>✉️ Sender: <strong style="color: #fbbf24;">${notificationConfig.smtpUser}</strong></div>
+          <div>🎯 Recipient: <strong style="color: #34d399;">${recipient}</strong></div>
+          <div>⏰ Verified At: <strong>${verifiedAt}</strong></div>
+        </div>
+        <p style="color: #94a3b8; font-size: 12px; margin-top: 16px;">
+          This configuration is persisted in Firestore collection <code>system_config/smtp</code>.
+        </p>
+      </div>
+    `
+      : `
       <div style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 24px; border-radius: 12px; border: 1px solid #10b981; max-width: 600px;">
         <h2 style="color: #34d399; margin: 0 0 12px 0;">🎉 滑铁卢融商汇 · 发信邮局测试成功</h2>
         <p style="color: #cbd5e1; font-size: 14px; line-height: 1.6;">
@@ -592,7 +1517,7 @@ app.post('/api/notifications/test-smtp', async (req, res) => {
           <div>🔌 连接端口: <strong style="color: #38bdf8;">${notificationConfig.smtpPort} (${notificationConfig.smtpPort === 465 ? 'SSL加密' : 'TLS加密'})</strong></div>
           <div>✉️ 发件账号: <strong style="color: #fbbf24;">${notificationConfig.smtpUser}</strong></div>
           <div>🎯 测试接收: <strong style="color: #34d399;">${recipient}</strong></div>
-          <div>⏰ 验证时间: <strong>${new Date().toLocaleString('zh-CN')}</strong></div>
+          <div>⏰ 验证时间: <strong>${verifiedAt}</strong></div>
         </div>
         <p style="color: #94a3b8; font-size: 12px; margin-top: 16px;">
           此配置已永久保存在 Firestore 云端集合 <code>system_config/smtp</code> 中，全端生效。
@@ -610,7 +1535,9 @@ app.post('/api/notifications/test-smtp', async (req, res) => {
 
     return res.json({
       success: true,
-      message: `测试邮件已成功发送至 ${recipient}！(MessageId: ${info.messageId})`,
+      message: isEn
+        ? `Test email delivered to ${recipient}! (MessageId: ${info.messageId})`
+        : `测试邮件已成功发送至 ${recipient}！(MessageId: ${info.messageId})`,
       recipient,
       messageId: info.messageId,
     });
@@ -619,23 +1546,30 @@ app.post('/api/notifications/test-smtp', async (req, res) => {
     let friendlyTip = '';
     const errMsg = err?.message || '';
     if (errMsg.includes('Invalid login') || errMsg.includes('535') || errMsg.includes('BadCredentials')) {
-      friendlyTip = '【密码/授权码错误】：请确认使用的是 Gmail 的“16位应用专用密码 (App Password)”，而不是您的 Google 账号日常登录密码。';
+      friendlyTip = isEn
+        ? '[Authentication Error]: Please verify you are using a 16-character Gmail App Password rather than your standard Google account password.'
+        : '【密码/授权码错误】：请确认使用的是 Gmail 的“16位应用专用密码 (App Password)”，而不是您的 Google 账号日常登录密码。';
     } else if (errMsg.includes('ETIMEDOUT') || errMsg.includes('ECONNREFUSED')) {
-      friendlyTip = '【连接超时或被拒】：请检查 SMTP 主机和端口是否正确 (Gmail 推荐 465 或 587)。';
+      friendlyTip = isEn
+        ? '[Connection Timeout / Refused]: Please verify the SMTP host and port (465 or 587 recommended for Gmail).'
+        : '【连接超时或被拒】：请检查 SMTP 主机和端口是否正确 (Gmail 推荐 465 或 587)。';
     }
     return res.status(500).json({
       success: false,
-      error: `发信测试失败: ${errMsg}${friendlyTip ? `\n提示: ${friendlyTip}` : ''}`,
+      error: isEn
+        ? `SMTP test failed: ${errMsg}${friendlyTip ? `\nTip: ${friendlyTip}` : ''}`
+        : `发信测试失败: ${errMsg}${friendlyTip ? `\n提示: ${friendlyTip}` : ''}`,
     });
   }
 });
 
 // 4c. New Merchant Application Notification Route (Send to Admin Emails)
 app.post('/api/notifications/merchant-application', async (req, res) => {
+  const isEn = req.body?.lang === 'en';
   try {
     const { merchant } = req.body;
     if (!merchant || !merchant.name) {
-      return res.status(400).json({ error: '商户资料不完整' });
+      return res.status(400).json({ error: isEn ? 'Incomplete merchant application data' : '商户资料不完整' });
     }
 
     const origin = req.headers.origin || req.headers.referer;
@@ -649,7 +1583,7 @@ app.post('/api/notifications/merchant-application', async (req, res) => {
       }
     }
     if (!appUrl) appUrl = 'https://waterloobusiness.ca';
-    const auditUrl = `${appUrl}/#directory`;
+    const auditUrl = isEn ? `${appUrl}/en#directory` : `${appUrl}/#directory`;
     const recipients = notificationConfig.adminEmails;
 
     const escapeHtml = (str: string) =>
@@ -660,10 +1594,91 @@ app.post('/api/notifications/merchant-application', async (req, res) => {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
 
-    const subject = `【滑铁卢融商汇】新商户入驻待审提醒: ${merchant.name} (${merchant.category || '综合商户'})`;
-    const snippet = `商户「${merchant.name}」已提交入驻申请，负责人：${merchant.repName || '未填'}，电话：${merchant.phone || '未填'}，请秘书处及时审批。`;
+    const displayName = isEn ? (merchant.nameEn || merchant.name) : merchant.name;
+    const subject = isEn
+      ? `[WBCA] New Merchant Application Pending Review: ${displayName} (${merchant.category || 'General Business'})`
+      : `【滑铁卢融商汇】新商户入驻待审提醒: ${merchant.name} (${merchant.category || '综合商户'})`;
+    const snippet = isEn
+      ? `Merchant "${displayName}" submitted a directory application (Lead: ${merchant.repName || 'Not provided'}, Phone: ${merchant.phone || 'Not provided'}). Please review in the Secretariat console.`
+      : `商户「${merchant.name}」已提交入驻申请，负责人：${merchant.repName || '未填'}，电话：${merchant.phone || '未填'}，请秘书处及时审批。`;
 
-    const html = `
+    const html = isEn
+      ? `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 24px; }
+    .container { max-width: 620px; margin: 0 auto; background-color: #1e293b; border: 1px solid #f59e0b40; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); }
+    .header { background: linear-gradient(135deg, #78350f 0%, #1e293b 100%); padding: 28px 24px; border-bottom: 2px solid #f59e0b; text-align: center; }
+    .header h1 { margin: 0; font-size: 20px; color: #fef3c7; letter-spacing: 0.5px; }
+    .header p { margin: 6px 0 0 0; font-size: 12px; color: #cbd5e1; }
+    .content { padding: 28px 24px; }
+    .badge { display: inline-block; background-color: #f59e0b20; color: #fbbf24; border: 1px solid #f59e0b50; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 16px; }
+    .merchant-card { background-color: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 20px; margin: 16px 0; }
+    .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1e293b; font-size: 13px; }
+    .row:last-child { border-bottom: none; }
+    .label { color: #94a3b8; font-weight: 500; }
+    .value { color: #ffffff; font-weight: 600; text-align: right; }
+    .tagline-box { background-color: #1e293b; border-left: 4px solid #f59e0b; padding: 12px; border-radius: 4px; margin: 16px 0; font-size: 13px; color: #fde68a; }
+    .btn { display: block; width: 100%; box-sizing: border-box; text-align: center; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #0f172a; text-decoration: none; padding: 14px 20px; border-radius: 10px; font-weight: bold; font-size: 14px; margin-top: 24px; }
+    .footer { background-color: #0b1120; padding: 16px 24px; text-align: center; font-size: 11px; color: #64748b; border-top: 1px solid #1e293b; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>WBCA Secretariat · Application Review Notice</h1>
+      <p>Waterloo Business Convergence Alliance · New Merchant Application</p>
+    </div>
+    <div class="content">
+      <span class="badge">Pending Secretariat Approval</span>
+      <h2 style="margin: 0 0 8px 0; color: #ffffff; font-size: 18px;">New Corporate Directory Application Submitted</h2>
+      <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; margin: 0 0 16px 0;">
+        Dear WBCA Administrator, a new corporate or practitioner application has been submitted. Please sign in to the Secretariat admin console to verify credentials and publish or decline the listing.
+      </p>
+
+      <div class="merchant-card">
+        ${merchant.logo && (merchant.logo.startsWith('http') || merchant.logo.startsWith('data:image')) ? `
+        <div style="text-align: center; margin-bottom: 16px;">
+          <img src="${merchant.logo}" alt="Logo or Photo" style="width: 72px; height: 72px; object-fit: cover; border-radius: ${merchant.entityType === 'individual' ? '50%' : '12px'}; border: 2px solid #f59e0b;" />
+          <div style="font-size: 11px; color: #fde68a; margin-top: 6px; font-weight: bold;">
+            ${merchant.entityType === 'individual' ? '👤 Individual Practitioner Portrait' : '🏢 Official Corporate Logo'}
+          </div>
+        </div>` : ''}
+        <div class="row"><span class="label">Entity Type</span><span class="value">${merchant.entityType === 'individual' ? '👤 Individual / Practitioner' : '🏢 Corporate Entity'}</span></div>
+        <div class="row"><span class="label">${merchant.entityType === 'individual' ? 'Practitioner Name' : 'Registered Name'}</span><span class="value">${escapeHtml(merchant.name)}</span></div>
+        <div class="row"><span class="label">English Name</span><span class="value">${escapeHtml(merchant.nameEn || 'Not provided')}</span></div>
+        <div class="row"><span class="label">Industry Sector</span><span class="value">${escapeHtml(merchant.category || 'General Business')}</span></div>
+        <div class="row"><span class="label">Principal / Lead</span><span class="value">${escapeHtml(merchant.repName || 'Not provided')}</span></div>
+        <div class="row"><span class="label">Phone</span><span class="value">${escapeHtml(merchant.phone || 'Not provided')}</span></div>
+        <div class="row"><span class="label">Official Email</span><span class="value">${escapeHtml(merchant.email || 'Not provided')}</span></div>
+        <div class="row"><span class="label">Website</span><span class="value">${escapeHtml(merchant.website || 'Not provided')}</span></div>
+        <div class="row"><span class="label">Waterloo Address</span><span class="value">${escapeHtml(merchant.address || 'Waterloo, ON')}</span></div>
+      </div>
+
+      <div class="tagline-box">
+        <strong>Executive Tagline:</strong><br>
+        ${escapeHtml(merchant.tagline || 'Dedicated to serving the Waterloo Region business community with integrity and excellence.')}
+      </div>
+
+      ${merchant.memberPrivilege ? `
+      <p style="font-size: 12px; color: #cbd5e1; margin: 12px 0 0 0;">
+        <strong>Member Privilege Commitment:</strong> ${escapeHtml(merchant.memberPrivilege)}
+      </p>` : ''}
+
+      <a href="${auditUrl}" class="btn">Open Admin Console to Review Application</a>
+    </div>
+    <div class="footer">
+      Automatically dispatched by the Waterloo Business Convergence Alliance (WBCA) Digital Hub to: ${recipients.join(', ')}<br>
+      © ${new Date().getFullYear()} Waterloo Business Convergence Alliance. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
+    `
+      : `
 <!DOCTYPE html>
 <html>
 <head>
@@ -739,7 +1754,9 @@ app.post('/api/notifications/merchant-application', async (req, res) => {
 </html>
     `;
 
-    const text = `【滑铁卢融商汇·新商户入驻待审】\n企业名称：${merchant.name}\n行业：${merchant.category}\n代表：${merchant.repName}\n电话：${merchant.phone}\n邮箱：${merchant.email}\n网址：${merchant.website}\n标语：${merchant.tagline}\n请前往商会后台审批：${auditUrl}`;
+    const text = isEn
+      ? `[WBCA · New Merchant Application Pending Review]\nEntity: ${displayName}\nSector: ${merchant.category}\nLead: ${merchant.repName}\nPhone: ${merchant.phone}\nEmail: ${merchant.email}\nWebsite: ${merchant.website}\nTagline: ${merchant.tagline}\nReview in admin console: ${auditUrl}`
+      : `【滑铁卢融商汇·新商户入驻待审】\n企业名称：${merchant.name}\n行业：${merchant.category}\n代表：${merchant.repName}\n电话：${merchant.phone}\n邮箱：${merchant.email}\n网址：${merchant.website}\n标语：${merchant.tagline}\n请前往商会后台审批：${auditUrl}`;
 
     const mailtoUrl = `mailto:${recipients.join(',')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
 
@@ -749,8 +1766,9 @@ app.post('/api/notifications/merchant-application', async (req, res) => {
       html,
       text,
       type: 'MERCHANT_APPLICATION',
-      title: `新商户入驻待审 - ${merchant.name}`,
+      title: isEn ? `Merchant Review Pending - ${displayName}` : `新商户入驻待审 - ${merchant.name}`,
       snippet,
+      lang: isEn ? 'en' : 'zh',
     });
 
     return res.json({
@@ -764,16 +1782,17 @@ app.post('/api/notifications/merchant-application', async (req, res) => {
     });
   } catch (err: any) {
     console.error('Error sending merchant application notification:', err);
-    return res.status(500).json({ error: '商户通知派发失败' });
+    return res.status(500).json({ error: isEn ? 'Failed to dispatch merchant notification' : '商户通知派发失败' });
   }
 });
 
 // 4d. Chamber Opportunity / Mutual Help Broadcast Route (Send to All Merchants)
 app.post('/api/notifications/chamber-opportunity', async (req, res) => {
+  const isEn = req.body?.lang === 'en';
   try {
     const { post, merchantEmails } = req.body;
     if (!post || !post.title) {
-      return res.status(400).json({ error: '互助商机内容不完整' });
+      return res.status(400).json({ error: isEn ? 'Incomplete business opportunity payload' : '互助商机内容不完整' });
     }
 
     const origin = req.headers.origin || req.headers.referer;
@@ -787,7 +1806,7 @@ app.post('/api/notifications/chamber-opportunity', async (req, res) => {
       }
     }
     if (!appUrl) appUrl = 'https://waterloobusiness.ca';
-    const hubUrl = `${appUrl}/#help`;
+    const hubUrl = isEn ? `${appUrl}/en#help` : `${appUrl}/#help`;
 
     // Recipient list: Clean merchant emails from request + include admin emails
     let targetEmails: string[] = [];
@@ -808,15 +1827,15 @@ app.post('/api/notifications/chamber-opportunity', async (req, res) => {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
 
-    const postTitle = post.title || '最新商机合作需求';
-    const authorCompany = post.authorCompany || '商会认证企业';
-    const authorName = post.authorName || '商会实名会员';
-    const category = post.category || '综合商机';
+    const postTitle = post.title || (isEn ? 'New Member Business Opportunity' : '最新商机合作需求');
+    const authorCompany = post.authorCompany || (isEn ? 'WBCA Verified Enterprise' : '商会认证企业');
+    const authorName = post.authorName || (isEn ? 'Verified Member' : '商会实名会员');
+    const category = post.category || (isEn ? 'General Collaboration' : '综合商机');
     const rewardPoints = post.rewardPoints || 0;
-    const contactInfo = post.contactInfo || '请直接在商会平台内信沟通对接';
+    const contactInfo = post.contactInfo || (isEn ? 'Connect directly via the WBCA Mutual Aid Hub' : '请直接在商会平台内信沟通对接');
 
     // Format description nicely for HTML email
-    const rawDesc = post.description || '暂无详细描述';
+    const rawDesc = post.description || (isEn ? 'No detailed description provided.' : '暂无详细描述');
     const formattedDescLines = rawDesc
       .split('\n')
       .map((line: string) => escapeHtml(line.trim()))
@@ -824,10 +1843,103 @@ app.post('/api/notifications/chamber-opportunity', async (req, res) => {
       .map((line: string) => `<p style="margin: 0 0 10px 0; line-height: 1.75; font-size: 14px; color: #f1f5f9;">${line}</p>`)
       .join('');
 
-    const subject = `【滑铁卢创商汇·商机互助通报】会员发布新商机：「${postTitle}」`;
-    const snippet = `会员企业「${authorCompany}」发布了新商机需求「${postTitle}」，悬赏 ${rewardPoints} 积分，诚邀各会员企业开展业务对接！`;
+    const subject = isEn
+      ? `[WBCA Opportunity Broadcast] New Member Request: "${postTitle}"`
+      : `【滑铁卢创商汇·商机互助通报】会员发布新商机：「${postTitle}」`;
+    const snippet = isEn
+      ? `Member enterprise "${authorCompany}" posted an opportunity "${postTitle}" with a ${rewardPoints} credit bounty. Verified members are invited to connect.`
+      : `会员企业「${authorCompany}」发布了新商机需求「${postTitle}」，悬赏 ${rewardPoints} 积分，诚邀各会员企业开展业务对接！`;
 
-    const html = `
+    const html = isEn
+      ? `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${escapeHtml(subject)}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0b1120; color: #f8fafc; margin: 0; padding: 24px; -webkit-font-smoothing: antialiased; }
+    .container { max-width: 640px; margin: 0 auto; background-color: #0f172a; border: 1px solid #0284c750; border-radius: 18px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); }
+    .header { background: linear-gradient(135deg, #0369a1 0%, #0f172a 100%); padding: 32px 28px; border-bottom: 2px solid #38bdf8; text-align: center; }
+    .header h1 { margin: 0; font-size: 22px; color: #f0f9ff; letter-spacing: 0.5px; font-weight: 800; }
+    .header p { margin: 8px 0 0 0; font-size: 13px; color: #bae6fd; letter-spacing: 0.3px; }
+    .content { padding: 32px 28px; }
+    .badges-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .badge-reward { display: inline-block; background-color: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.45); padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: bold; }
+    .badge-cat { display: inline-block; background-color: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+    .post-card { background-color: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 24px; margin: 20px 0; }
+    .title { color: #ffffff; font-size: 19px; font-weight: 800; margin-bottom: 14px; line-height: 1.4; }
+    .meta-box { background-color: #0f172a; border-radius: 10px; padding: 14px 16px; margin-bottom: 18px; border: 1px solid #334155; font-size: 13px; }
+    .meta-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #1e293b; }
+    .meta-item:last-child { border-bottom: none; }
+    .meta-label { color: #94a3b8; }
+    .meta-val { color: #ffffff; font-weight: 600; text-align: right; }
+    .desc-header { font-size: 13px; font-weight: bold; color: #38bdf8; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .desc-box { font-size: 14px; color: #e2e8f0; line-height: 1.8; background-color: #0b1120; padding: 18px; border-radius: 10px; border-left: 4px solid #38bdf8; }
+    .contact-box { background-color: rgba(14, 165, 233, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); padding: 14px 16px; border-radius: 10px; margin-top: 16px; font-size: 13px; }
+    .btn { display: block; width: 100%; box-sizing: border-box; text-align: center; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff !important; text-decoration: none; padding: 16px 24px; border-radius: 12px; font-weight: bold; font-size: 15px; margin-top: 28px; box-shadow: 0 10px 15px -3px rgba(2, 132, 199, 0.4); }
+    .footer { background-color: #070d18; padding: 20px 28px; text-align: center; font-size: 11px; color: #64748b; border-top: 1px solid #1e293b; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>WBCA · Member Opportunity Broadcast</h1>
+      <p>Waterloo Business Convergence Alliance · Executive Mutual Aid Hub</p>
+    </div>
+    <div class="content">
+      <div class="badges-row">
+        <span class="badge-reward">🪙 Credit Bounty: ${rewardPoints} Pts</span>
+        <span class="badge-cat">📁 Category: ${escapeHtml(category)}</span>
+      </div>
+
+      <div class="post-card">
+        <div class="title">${escapeHtml(postTitle)}</div>
+
+        <div class="meta-box">
+          <div class="meta-item">
+            <span class="meta-label">Issuing Enterprise</span>
+            <span class="meta-val" style="color: #38bdf8;">${escapeHtml(authorCompany)}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Contact Person</span>
+            <span class="meta-val">${escapeHtml(authorName)}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Broadcast Scope</span>
+            <span class="meta-val">WBCA Verified Enterprises (${combinedEmails.length} recipients)</span>
+          </div>
+        </div>
+
+        <div class="desc-header">📋 Opportunity Brief</div>
+        <div class="desc-box">
+          ${formattedDescLines}
+        </div>
+
+        <div class="contact-box">
+          <strong style="color: #38bdf8;">📞 Direct Liaison:</strong>
+          <span style="color: #ffffff; margin-left: 4px;">${escapeHtml(contactInfo)}</span>
+        </div>
+      </div>
+
+      <p style="font-size: 13px; color: #94a3b8; line-height: 1.7; margin: 0;">
+        If your firm can supply the required expertise or partnership resources, click below to respond directly on the WBCA Mutual Aid Hub and earn credit rewards.
+      </p>
+
+      <a href="${hubUrl}" class="btn">🚀 Respond in the WBCA Mutual Aid Hub</a>
+    </div>
+
+    <div class="footer">
+      Automatically dispatched by the Waterloo Business Convergence Alliance (WBCA) Digital Hub.<br>
+      All member email addresses are protected via BCC to safeguard commercial privacy.<br>
+      © ${new Date().getFullYear()} Waterloo Business Convergence Alliance. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
+    `
+      : `
 <!DOCTYPE html>
 <html>
 <head>
@@ -916,7 +2028,9 @@ app.post('/api/notifications/chamber-opportunity', async (req, res) => {
 </html>
     `;
 
-    const text = `【滑铁卢融商汇·商机互助通报】\n\n新商机：「${postTitle}」\n发布企业：${authorCompany} (${authorName})\n分类：${category}\n悬赏积分：${rewardPoints} 分\n\n【需求详情】：\n${rawDesc}\n\n【对接联络方式】：\n${contactInfo}\n\n立即前往互助圈响应：${hubUrl}`;
+    const text = isEn
+      ? `[WBCA · Member Opportunity Broadcast]\n\nOpportunity: "${postTitle}"\nEnterprise: ${authorCompany} (${authorName})\nCategory: ${category}\nBounty: ${rewardPoints} Pts\n\n[Brief]:\n${rawDesc}\n\n[Contact]:\n${contactInfo}\n\nRespond in Hub: ${hubUrl}`
+      : `【滑铁卢融商汇·商机互助通报】\n\n新商机：「${postTitle}」\n发布企业：${authorCompany} (${authorName})\n分类：${category}\n悬赏积分：${rewardPoints} 分\n\n【需求详情】：\n${rawDesc}\n\n【对接联络方式】：\n${contactInfo}\n\n立即前往互助圈响应：${hubUrl}`;
 
     // For mass mail, use BCC to protect all merchant email privacy!
     const mailtoUrl = `mailto:?bcc=${encodeURIComponent(combinedEmails.join(','))}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
@@ -928,8 +2042,9 @@ app.post('/api/notifications/chamber-opportunity', async (req, res) => {
       html,
       text,
       type: 'CHAMBER_OPPORTUNITY',
-      title: `全商会商机互助通告 - ${postTitle}`,
+      title: isEn ? `Chamber Opportunity Broadcast - ${postTitle}` : `全商会商机互助通告 - ${postTitle}`,
       snippet,
+      lang: isEn ? 'en' : 'zh',
     });
 
     return res.json({
@@ -944,16 +2059,17 @@ app.post('/api/notifications/chamber-opportunity', async (req, res) => {
     });
   } catch (err: any) {
     console.error('Error sending chamber opportunity notification:', err);
-    return res.status(500).json({ error: '商机通告派发失败' });
+    return res.status(500).json({ error: isEn ? 'Failed to dispatch opportunity broadcast' : '商机通告派发失败' });
   }
 });
 
 // 4e. External Opportunity Pending Admin Audit Notification Route
 app.post('/api/notifications/opportunity-pending-admin', async (req, res) => {
+  const isEn = req.body?.lang === 'en';
   try {
     const { post } = req.body;
     if (!post || !post.title) {
-      return res.status(400).json({ error: '商机信息不完整' });
+      return res.status(400).json({ error: isEn ? 'Incomplete opportunity details' : '商机信息不完整' });
     }
 
     const origin = req.headers.origin || req.headers.referer;
@@ -967,7 +2083,7 @@ app.post('/api/notifications/opportunity-pending-admin', async (req, res) => {
       }
     }
     if (!appUrl) appUrl = 'https://waterloobusiness.ca';
-    const auditUrl = `${appUrl}/#help`;
+    const auditUrl = isEn ? `${appUrl}/en#help` : `${appUrl}/#help`;
     const recipients = notificationConfig.adminEmails;
 
     const escapeHtml = (str: string) =>
@@ -978,15 +2094,80 @@ app.post('/api/notifications/opportunity-pending-admin', async (req, res) => {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
 
-    const postTitle = post.title || '外部客户合作需求';
-    const authorName = post.authorName || '外部潜在客户';
-    const authorCompany = post.authorCompany || '未提供企业名';
-    const contactInfo = post.contactInfo || `${post.authorPhone || ''} ${post.authorEmail || ''}`.trim() || '未填';
+    const postTitle = post.title || (isEn ? 'External Business Inquiry' : '外部客户合作需求');
+    const authorName = post.authorName || (isEn ? 'External Client' : '外部潜在客户');
+    const authorCompany = post.authorCompany || (isEn ? 'Company not specified' : '未提供企业名');
+    const contactInfo = post.contactInfo || `${post.authorPhone || ''} ${post.authorEmail || ''}`.trim() || (isEn ? 'Not provided' : '未填');
 
-    const subject = `【滑铁卢创商汇】外部潜在客户商机待审提醒: 「${postTitle}」`;
-    const snippet = `外部客户「${authorName}」(${authorCompany}) 提交了新合作需求「${postTitle}」，需秘书处审核后方可全员群发。`;
+    const subject = isEn
+      ? `[WBCA] External Opportunity Pending Review: "${postTitle}"`
+      : `【滑铁卢创商汇】外部潜在客户商机待审提醒: 「${postTitle}」`;
+    const snippet = isEn
+      ? `External client "${authorName}" (${authorCompany}) submitted a business request "${postTitle}". Secretariat approval is required prior to alliance broadcast.`
+      : `外部客户「${authorName}」(${authorCompany}) 提交了新合作需求「${postTitle}」，需秘书处审核后方可全员群发。`;
 
-    const html = `
+    const html = isEn
+      ? `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0b1120; color: #f8fafc; margin: 0; padding: 24px; }
+    .container { max-width: 620px; margin: 0 auto; background-color: #0f172a; border: 1px solid #f59e0b50; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); }
+    .header { background: linear-gradient(135deg, #78350f 0%, #0f172a 100%); padding: 28px 24px; border-bottom: 2px solid #f59e0b; text-align: center; }
+    .header h1 { margin: 0; font-size: 20px; color: #fef3c7; letter-spacing: 0.5px; }
+    .header p { margin: 6px 0 0 0; font-size: 12px; color: #cbd5e1; }
+    .content { padding: 28px 24px; }
+    .badge { display: inline-block; background-color: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.5); padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 16px; }
+    .card { background-color: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; margin: 16px 0; }
+    .row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid #0f172a; font-size: 13px; }
+    .row:last-child { border-bottom: none; }
+    .label { color: #94a3b8; }
+    .val { color: #ffffff; font-weight: 600; text-align: right; }
+    .desc-box { background-color: #0b1120; padding: 14px; border-radius: 8px; border-left: 3px solid #f59e0b; margin-top: 14px; font-size: 13px; color: #e2e8f0; line-height: 1.6; }
+    .btn { display: block; width: 100%; box-sizing: border-box; text-align: center; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #0f172a !important; text-decoration: none; padding: 14px 20px; border-radius: 10px; font-weight: bold; font-size: 14px; margin-top: 24px; }
+    .footer { background-color: #070d18; padding: 16px 24px; text-align: center; font-size: 11px; color: #64748b; border-top: 1px solid #1e293b; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>WBCA · External Opportunity Audit Alert</h1>
+      <p>Waterloo Business Convergence Alliance · Secretariat Verification</p>
+    </div>
+    <div class="content">
+      <span class="badge">🔔 Pending Secretariat Audit</span>
+      <h2 style="margin: 0 0 8px 0; color: #ffffff; font-size: 18px;">New External Client Opportunity Submitted</h2>
+      <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; margin: 0 0 16px 0;">
+        Dear WBCA Administrator, an external client has submitted a business inquiry. To protect alliance members from unsolicited spam, <strong>member-wide email broadcast is held pending review</strong>. Please inspect and click [Approve & Broadcast] in the admin hub.
+      </p>
+
+      <div class="card">
+        <div class="row"><span class="label">Title</span><span class="val" style="color: #fde68a;">${escapeHtml(postTitle)}</span></div>
+        <div class="row"><span class="label">Category</span><span class="val">${escapeHtml(post.category || 'General Collaboration')}</span></div>
+        <div class="row"><span class="label">Client Name</span><span class="val">${escapeHtml(authorName)}</span></div>
+        <div class="row"><span class="label">Organization</span><span class="val">${escapeHtml(authorCompany)}</span></div>
+        <div class="row"><span class="label">Contact Info</span><span class="val">${escapeHtml(contactInfo)}</span></div>
+        <div class="row"><span class="label">Bounty</span><span class="val">${post.rewardPoints || 0} Pts</span></div>
+
+        <div class="desc-box">
+          <strong>Requirement Description:</strong><br>
+          ${escapeHtml(post.description || 'No description provided')}
+        </div>
+      </div>
+
+      <a href="${auditUrl}" class="btn">Review & Broadcast in Mutual Aid Hub</a>
+    </div>
+    <div class="footer">
+      Dispatched by the Waterloo Business Convergence Alliance (WBCA) Digital Hub to: ${recipients.join(', ')}<br>
+      © ${new Date().getFullYear()} Waterloo Business Convergence Alliance. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
+    `
+      : `
 <!DOCTYPE html>
 <html>
 <head>
@@ -1047,7 +2228,9 @@ app.post('/api/notifications/opportunity-pending-admin', async (req, res) => {
 </html>
     `;
 
-    const text = `【滑铁卢融商汇·外部商机待审】\n外部客户：${authorName} (${authorCompany})\n标题：${postTitle}\n联系方式：${contactInfo}\n详情：${post.description}\n请登录商会后台审核：${auditUrl}`;
+    const text = isEn
+      ? `[WBCA · External Opportunity Pending Review]\nClient: ${authorName} (${authorCompany})\nTitle: ${postTitle}\nContact: ${contactInfo}\nDetails: ${post.description}\nReview in admin hub: ${auditUrl}`
+      : `【滑铁卢融商汇·外部商机待审】\n外部客户：${authorName} (${authorCompany})\n标题：${postTitle}\n联系方式：${contactInfo}\n详情：${post.description}\n请登录商会后台审核：${auditUrl}`;
 
     const result = await sendOrLogEmail({
       to: recipients,
@@ -1055,8 +2238,9 @@ app.post('/api/notifications/opportunity-pending-admin', async (req, res) => {
       html,
       text,
       type: 'CHAMBER_OPPORTUNITY',
-      title: `外部商机待审 - ${postTitle}`,
+      title: isEn ? `External Opportunity Pending - ${postTitle}` : `外部商机待审 - ${postTitle}`,
       snippet,
+      lang: isEn ? 'en' : 'zh',
     });
 
     return res.json({
@@ -1068,7 +2252,7 @@ app.post('/api/notifications/opportunity-pending-admin', async (req, res) => {
     });
   } catch (err: any) {
     console.error('Error notifying admins of pending opportunity:', err);
-    return res.status(500).json({ error: '待审通知派发失败' });
+    return res.status(500).json({ error: isEn ? 'Failed to dispatch pending review alert' : '待审通知派发失败' });
   }
 });
 

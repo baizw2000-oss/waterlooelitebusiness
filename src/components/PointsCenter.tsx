@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { RewardItem, LeaderboardUser, PointsTransaction, UserProfile } from '../types';
 import { 
-  Award, 
   Sparkles, 
   TrendingUp, 
   CheckCircle2, 
   ShoppingBag, 
   Clock, 
-  ChevronRight, 
   Gift, 
   Crown, 
   Layout, 
@@ -17,6 +15,14 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { UserAvatar } from './UserAvatar';
+import { useLanguage } from '../i18n/LanguageContext';
+import {
+  translateRewardItem,
+  translateRelativeTime,
+  translateTier,
+  translateTransactionTitle,
+  translateUserField,
+} from '../i18n/domainTranslations';
 
 interface PointsCenterProps {
   userPoints: number;
@@ -39,6 +45,7 @@ export const PointsCenter: React.FC<PointsCenterProps> = ({
   onRedeemReward,
   user,
 }) => {
+  const { isEn, t } = useLanguage();
   const [selectedReward, setSelectedReward] = useState<RewardItem | null>(null);
   const [redeemSuccessMsg, setRedeemSuccessMsg] = useState<string | null>(null);
 
@@ -49,8 +56,14 @@ export const PointsCenter: React.FC<PointsCenterProps> = ({
       spread: 60,
       origin: { y: 0.6 },
     });
+    const localized = translateRewardItem(item, isEn);
     onRedeemReward(item);
-    setRedeemSuccessMsg(`成功兑换「${item.title}」！权益已自动放入您的会员账户。`);
+    setRedeemSuccessMsg(
+      t(
+        `成功兑换「${localized.title}」！权益已自动放入您的会员账户。`,
+        `Successfully redeemed "${localized.title}"! Your benefit has been credited to your member account.`
+      )
+    );
     setSelectedReward(null);
     setTimeout(() => setRedeemSuccessMsg(null), 4000);
   };
@@ -59,80 +72,95 @@ export const PointsCenter: React.FC<PointsCenterProps> = ({
     switch (iconName) {
       case 'Layout':
       case 'LayoutTop':
-        return <Layout className="w-5 h-5 text-amber-400" />;
+        return <Layout className="w-5 h-5 text-[#9E7425]" />;
       case 'Crown':
-        return <Crown className="w-5 h-5 text-amber-400" />;
+        return <Crown className="w-5 h-5 text-[#9E7425]" />;
       case 'BookOpen':
-        return <BookOpen className="w-5 h-5 text-amber-400" />;
+        return <BookOpen className="w-5 h-5 text-[#9E7425]" />;
       case 'Utensils':
-        return <Utensils className="w-5 h-5 text-amber-400" />;
+        return <Utensils className="w-5 h-5 text-[#9E7425]" />;
       default:
-        return <Gift className="w-5 h-5 text-amber-400" />;
+        return <Gift className="w-5 h-5 text-[#9E7425]" />;
     }
   };
 
+  const localizedSelectedReward = selectedReward ? translateRewardItem(selectedReward, isEn) : null;
+
   return (
     <div className="space-y-8">
-      {/* 1. Points Wallet & Check-in Hero */}
+      {/* 1. Private Vault Points Balance & Daily Check-in */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Wallet Balance Card */}
-        <div className="lg:col-span-2 relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-950/50 via-slate-900 to-slate-950 border border-amber-500/40 p-6 sm:p-8 shadow-2xl flex flex-col justify-between">
-          <div className="space-y-4">
+        <div className="lg:col-span-2 relative overflow-hidden rounded-2xl bg-white border border-[#C5A059]/45 p-6 sm:p-8 luxury-shadow flex flex-col justify-between text-[#0F172A]">
+          <div className="absolute top-0 right-0 w-72 h-72 bg-[#C5A059]/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="relative z-10 space-y-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
-                <span className="text-xs font-bold text-amber-300 tracking-wider uppercase">
-                  融商会员专属信誉资产
+                <span className="w-2 h-2 rounded-full bg-[#C5A059]" />
+                <span className="text-[11px] font-bold text-[#9E7425] tracking-[0.18em] uppercase">
+                  {t('融商会员专属信誉资产 · Private Ledger', 'Member Trust Ledger · Private Assets')}
                 </span>
               </div>
-              <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold flex items-center gap-1">
-                <Crown className="w-3.5 h-3.5 text-amber-400" />
-                卓越商勋理事
+              <span className="text-xs font-semibold text-[#9E7425] flex items-center gap-1">
+                <Crown className="w-3.5 h-3.5 text-[#C5A059]" />
+                {t('卓越商勋理事', 'Honorary Council Tier')}
               </span>
             </div>
 
             <div>
-              <div className="text-xs sm:text-sm text-slate-400 font-medium">
-                当前可用融商积分 (Convergence Points)
+              <div className="text-xs sm:text-sm text-slate-600 font-normal">
+                {t('当前可用融商积分 (Convergence Points)', 'Available Convergence Trust Credits')}
               </div>
-              <div className="text-4xl sm:text-5xl font-black text-amber-300 font-serif tracking-tight mt-1">
+              <div className="text-4xl sm:text-5xl font-bold text-gold-ink font-editorial tracking-tight mt-1">
                 {userPoints.toLocaleString()}
-                <span className="text-base sm:text-lg font-sans font-normal text-amber-500/80 ml-2">
-                  分
+                <span className="text-base sm:text-lg font-sans font-normal text-[#9E7425] ml-2">
+                  {t('分', 'Pts')}
                 </span>
               </div>
             </div>
 
             {/* Tier Progress */}
             <div className="space-y-1.5 pt-2">
-              <div className="flex items-center justify-between text-xs text-slate-300">
-                <span>晋级下一阶「荣誉商勋」进度</span>
-                <span className="text-amber-300 font-semibold">{userPoints.toLocaleString()} / 500 分</span>
+              <div className="flex items-center justify-between text-xs text-slate-600">
+                <span>{t('晋级下一阶「荣誉商勋」进度', 'Progress Toward "Honorary Distinction"')}</span>
+                <span className="text-[#9E7425] font-semibold">
+                  {userPoints.toLocaleString()} / 500 {t('分', 'Pts')}
+                </span>
               </div>
-              <div className="w-full h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+              <div className="w-full h-2 bg-[#F7F7F5] rounded-full overflow-hidden border border-[#E8E6DF]">
                 <div
-                  className="h-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-200 rounded-full transition-all duration-500"
+                  className="h-full gold-gradient rounded-full transition-all duration-500"
                   style={{ width: `${Math.min(100, Math.round((userPoints / 500) * 100))}%` }}
                 />
               </div>
             </div>
           </div>
 
-          <div className="pt-6 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-            <span>实名绑认企业: {user?.company || 'BV Financial'}</span>
-            <span>商会互助履约保全中</span>
+          <div className="relative z-10 pt-5 mt-5 border-t border-[#E8E6DF] flex items-center justify-between text-xs text-slate-600">
+            <span>
+              {t('实名绑认企业', 'Verified Enterprise')}:{' '}
+              <strong className="text-[#0F172A]">
+                {translateUserField(user?.company, isEn) || t('外部访客视角', 'External Guest View')}
+              </strong>
+            </span>
+            <span className="text-[#9E7425] font-semibold">
+              {t('商会互助履约保全中', 'Protected by WBCA Ledger')}
+            </span>
           </div>
         </div>
 
         {/* Daily Check-in Card */}
-        <div className="rounded-3xl bg-slate-900/90 border border-slate-800 p-6 flex flex-col justify-between shadow-xl space-y-4">
+        <div className="rounded-2xl bg-white border border-[#E8E6DF] p-6 flex flex-col justify-between luxury-shadow space-y-4">
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-white font-bold text-base">
-              <CalendarCheck className="w-5 h-5 text-amber-400" />
-              每日融商签到打卡
+            <div className="flex items-center gap-2 text-[#0F172A] font-editorial font-bold text-lg">
+              <CalendarCheck className="w-5 h-5 text-[#9E7425]" />
+              {t('每日融商签到打卡', 'Daily Executive Check-In')}
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              坚持每日打卡，保持融商汇在线活跃度，持续积累公信力权重与专属兑换积分。
+            <p className="text-xs text-slate-600 leading-relaxed">
+              {t(
+                '坚持每日打卡，保持融商汇在线活跃度，持续积累公信力权重与专属兑换积分。',
+                'Check in daily to build your standing across the alliance and accumulate redeemable Trust Credits.'
+              )}
             </p>
           </div>
 
@@ -140,61 +168,64 @@ export const PointsCenter: React.FC<PointsCenterProps> = ({
             <button
               onClick={onCheckIn}
               disabled={hasCheckedInToday}
-              className={`w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg ${
+              className={`w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-sm ${
                 hasCheckedInToday
-                  ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 cursor-default'
-                  : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 shadow-amber-500/20'
+                  ? 'bg-emerald-50 border border-emerald-200 text-emerald-700 cursor-default'
+                  : 'gold-gradient text-[#0F172A] hover:brightness-105'
               }`}
             >
               {hasCheckedInToday ? (
                 <>
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  今日已签到 (+10 积分已入账)
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  {t('今日已签到 (+10 积分已入账)', 'Checked In Today (+10 Pts Credited)')}
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-4 h-4 text-slate-950" />
-                  立即签到打卡 (+10 积分)
+                  <Sparkles className="w-4 h-4 text-[#0F172A]" />
+                  {t('立即签到打卡 (+10 积分)', 'Check In Now (+10 Pts)')}
                 </>
               )}
             </button>
           </div>
 
           <div className="text-[11px] text-slate-500 text-center">
-            连续签到7天可额外解锁商会周末头条曝光特权！
+            {t(
+              '连续签到7天可额外解锁商会周末头条曝光特权',
+              '7-day streaks unlock priority weekend spotlight eligibility'
+            )}
           </div>
         </div>
       </div>
 
       {/* Success Notification Alert */}
       {redeemSuccessMsg && (
-        <div className="p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-200 text-sm font-semibold text-center animate-in fade-in">
+        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-semibold text-center animate-in fade-in">
           🎉 {redeemSuccessMsg}
         </div>
       )}
 
       {/* 2. Ways to Earn Points */}
-      <div className="space-y-3">
-        <h3 className="text-base font-bold text-white flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-amber-400" />
-          积分获取机制与成长通道
+      <div className="space-y-4">
+        <h3 className="font-editorial text-xl font-bold text-[#0F172A] flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-[#9E7425]" />
+          {t('积分获取机制与成长通道', 'How to Earn Trust Credits')}
         </h3>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 text-xs">
           {[
-            { action: '每日名商打卡', reward: '+10 分', desc: '保持社群活跃' },
-            { action: '承接并解决互助', reward: '+50~200 分', desc: '响应会员供需' },
-            { action: '推荐优质会员入驻', reward: '+200 分', desc: '壮大名商网络' },
-            { action: '出席线下峰会/沙龙', reward: '+100 分', desc: '扫码核销打卡' },
-            { action: '撰写商户客观履约评价', reward: '+30 分', desc: '赋能公信体系' },
+            { action: t('每日名商打卡', 'Daily Check-In'), reward: t('+10 分', '+10 Pts'), desc: t('保持社群活跃', 'Active engagement') },
+            { action: t('承接并解决互助', 'Fulfill Mutual Aid'), reward: t('+50~200 分', '+50–200 Pts'), desc: t('响应会员供需', 'Peer deal support') },
+            { action: t('推荐优质会员入驻', 'Refer New Member'), reward: t('+200 分', '+200 Pts'), desc: t('壮大名商网络', 'Grow the alliance') },
+            { action: t('出席线下峰会/沙龙', 'Attend Summits'), reward: t('+100 分', '+100 Pts'), desc: t('扫码核销打卡', 'QR pass check-in') },
+            { action: t('撰写商户客观评价', 'Write Endorsement'), reward: t('+30 分', '+30 Pts'), desc: t('赋能公信体系', 'Strengthen peer trust') },
           ].map((item, idx) => (
             <div
               key={idx}
-              className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1 text-center"
+              className="p-4 rounded-2xl bg-white border border-[#E8E6DF] space-y-1 text-center luxury-shadow"
             >
-              <div className="text-amber-400 font-bold text-sm">{item.reward}</div>
-              <div className="text-white font-medium">{item.action}</div>
-              <div className="text-[10px] text-slate-500">{item.desc}</div>
+              <div className="text-[#9E7425] font-bold text-sm font-editorial">{item.reward}</div>
+              <div className="text-[#0F172A] font-semibold">{item.action}</div>
+              <div className="text-[11px] text-slate-500">{item.desc}</div>
             </div>
           ))}
         </div>
@@ -202,66 +233,70 @@ export const PointsCenter: React.FC<PointsCenterProps> = ({
 
       {/* 3. Points Redemption Mall */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5 text-amber-400" />
-              名商专属特权兑换商城
-            </h3>
-            <p className="text-xs text-slate-400">
-              用互助积分兑换高价值品牌展位、高层私董席位及名商专访
-            </p>
-          </div>
+        <div className="border-b border-[#E8E6DF] pb-3">
+          <h3 className="font-editorial text-xl font-bold text-[#0F172A] flex items-center gap-2">
+            <ShoppingBag className="w-5 h-5 text-[#9E7425]" />
+            {t('名商专属特权兑换商城', 'Executive Privileges & Rewards Catalog')}
+          </h3>
+          <p className="text-xs text-slate-600 mt-0.5">
+            {t(
+              '用互助积分兑换高价值品牌展位、高层私董席位及名商专访',
+              'Redeem accumulated credits for homepage spotlights, VIP summit access, and executive editorial features.'
+            )}
+          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {rewardItems.map((item) => {
+          {rewardItems.map((rawItem) => {
+            const item = translateRewardItem(rawItem, isEn);
             const canAfford = userPoints >= item.pointsCost;
             return (
               <div
                 key={item.id}
-                className="bg-slate-900/90 rounded-2xl border border-slate-800 hover:border-amber-500/40 p-5 flex flex-col justify-between space-y-4 shadow-lg transition-all"
+                className="bg-white rounded-2xl border border-[#E8E6DF] hover:border-[#C5A059] p-5 flex flex-col justify-between space-y-4 luxury-shadow transition-all"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-[#F7F7F5] border border-[#E8E6DF] flex items-center justify-center">
                       {getRewardIcon(item.iconName)}
                     </div>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
-                      库存: {item.stock}件
+                    <span className="text-[11px] text-slate-500 font-medium">
+                      {t(`余量 ${item.stock} 件`, `${item.stock} remaining`)}
                     </span>
                   </div>
 
                   <div>
-                    <h4 className="text-sm font-bold text-white line-clamp-1">
+                    <h4 className="font-editorial text-base font-bold text-[#0F172A] line-clamp-1">
                       {item.title}
                     </h4>
-                    <p className="text-xs text-slate-400 line-clamp-2 mt-1 leading-relaxed">
+                    <p className="text-xs text-slate-600 line-clamp-2 mt-1 leading-relaxed">
                       {item.description}
                     </p>
                   </div>
 
-                  <div className="text-[11px] text-amber-400/80 font-mono">
-                    有效期: {item.validPeriod}
+                  <div className="text-[11px] text-[#9E7425] font-medium">
+                    {t('有效期', 'Validity')}: {item.validPeriod}
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between">
-                  <div className="text-base font-black text-amber-300 font-serif">
+                <div className="pt-3 border-t border-[#E8E6DF] flex items-center justify-between">
+                  <div className="text-lg font-bold text-[#0F172A] font-editorial">
                     {item.pointsCost}{' '}
-                    <span className="text-xs font-normal text-slate-400">分</span>
+                    <span className="text-xs font-sans font-normal text-slate-500">
+                      {t('分', 'Pts')}
+                    </span>
                   </div>
 
                   <button
-                    onClick={() => setSelectedReward(item)}
+                    onClick={() => setSelectedReward(rawItem)}
                     disabled={!canAfford}
-                    className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all ${
+                    className={`px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all ${
                       canAfford
-                        ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md'
-                        : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                        ? 'bg-[#0F172A] hover:bg-[#1E293B] text-white shadow-sm'
+                        : 'bg-[#F7F7F5] border border-[#E8E6DF] text-slate-400 cursor-not-allowed'
                     }`}
                   >
-                    {canAfford ? '立即兑换' : '积分不足'}
+                    {canAfford ? t('立即兑换', 'Redeem') : t('积分不足', 'Insufficient')}
                   </button>
                 </div>
               </div>
@@ -273,125 +308,155 @@ export const PointsCenter: React.FC<PointsCenterProps> = ({
       {/* 4. Transactions Ledger & Leaderboard */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Transactions History */}
-        <div className="bg-slate-900/90 rounded-2xl border border-slate-800 p-5 space-y-4 shadow-lg">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-            <h4 className="text-sm font-bold text-white flex items-center gap-2">
-              <Clock className="w-4 h-4 text-slate-400" />
-              近期积分收支明细
+        <div className="bg-white rounded-2xl border border-[#E8E6DF] p-5 space-y-4 luxury-shadow">
+          <div className="flex items-center justify-between border-b border-[#E8E6DF] pb-3">
+            <h4 className="font-editorial text-base font-bold text-[#0F172A] flex items-center gap-2">
+              <Clock className="w-4 h-4 text-[#9E7425]" />
+              {t('近期积分收支明细', 'Recent Trust Credit Ledger')}
             </h4>
-            <span className="text-[11px] text-slate-500">双录凭证已区块链同步</span>
+            <span className="text-[11px] text-slate-500">
+              {t('双录凭证已云端保全', 'Synced to Cloud Ledger')}
+            </span>
           </div>
 
           <div className="space-y-2.5">
-            {transactions.map((tx) => (
-              <div
-                key={tx.id}
-                className="flex items-center justify-between p-3 rounded-xl bg-slate-950/60 border border-slate-800/70 text-xs"
-              >
-                <div>
-                  <div className="font-semibold text-slate-200">{tx.title}</div>
-                  <div className="text-[10px] text-slate-500">{tx.date}</div>
-                </div>
-                <div
-                  className={`font-black font-mono text-sm ${
-                    tx.change > 0 ? 'text-emerald-400' : 'text-rose-400'
-                  }`}
-                >
-                  {tx.change > 0 ? `+${tx.change}` : tx.change} 分
-                </div>
+            {transactions.length === 0 ? (
+              <div className="text-center py-8 text-xs text-slate-500">
+                {t(
+                  '暂无积分收支流水，参与每日签到或活动签到即可获赠积分',
+                  'No credit transactions recorded yet. Check in daily or attend events to earn points.'
+                )}
               </div>
-            ))}
+            ) : (
+              transactions.map((tx) => (
+                <div
+                  key={tx.id}
+                  className="flex items-center justify-between p-3 rounded-xl bg-[#F7F7F5] border border-[#E8E6DF] text-xs"
+                >
+                  <div>
+                    <div className="font-semibold text-[#0F172A]">
+                      {translateTransactionTitle(tx.title, isEn)}
+                    </div>
+                    <div className="text-[10px] text-slate-500">
+                      {translateRelativeTime(tx.date, isEn)}
+                    </div>
+                  </div>
+                  <div
+                    className={`font-bold font-mono text-sm ${
+                      tx.change > 0 ? 'text-emerald-700' : 'text-rose-700'
+                    }`}
+                  >
+                    {tx.change > 0 ? `+${tx.change}` : tx.change} {t('分', 'Pts')}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
         {/* Reputation Leaderboard */}
-        <div className="bg-slate-900/90 rounded-2xl border border-slate-800 p-5 space-y-4 shadow-lg">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-            <h4 className="text-sm font-bold text-white flex items-center gap-2">
-              <Crown className="w-4 h-4 text-amber-400" />
-              滑铁卢名商影响力琅琊榜
+        <div className="bg-white rounded-2xl border border-[#E8E6DF] p-5 space-y-4 luxury-shadow">
+          <div className="flex items-center justify-between border-b border-[#E8E6DF] pb-3">
+            <h4 className="font-editorial text-base font-bold text-[#0F172A] flex items-center gap-2">
+              <Crown className="w-4 h-4 text-[#9E7425]" />
+              {t('滑铁卢名商影响力琅琊榜', 'WBCA Member Influence Leaderboard')}
             </h4>
-            <span className="text-[11px] text-slate-500">月度榜首直通年度优秀表彰</span>
+            <span className="text-[11px] text-slate-500">
+              {t('月度榜首直通年度表彰', 'Top contributors honored annually')}
+            </span>
           </div>
 
           <div className="space-y-2.5">
-            {leaderboard.map((user) => (
-              <div
-                key={user.rank}
-                className="flex items-center justify-between p-3 rounded-xl bg-slate-950/60 border border-slate-800/70 text-xs"
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-6 h-6 rounded-full flex items-center justify-center font-bold font-mono text-xs ${
-                      user.rank === 1
-                        ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/20'
-                        : user.rank === 2
-                        ? 'bg-slate-300 text-slate-950'
-                        : user.rank === 3
-                        ? 'bg-amber-700 text-white'
-                        : 'bg-slate-800 text-slate-400'
-                    }`}
-                  >
-                    {user.rank}
-                  </div>
-                  <UserAvatar avatar={user.avatar} name={user.name} size="sm" className="w-7 h-7 rounded-full" />
-                  <div>
-                    <div className="font-bold text-white flex items-center gap-1.5">
-                      {user.name}
-                      <span className="text-[10px] text-amber-400/90 font-normal">
-                        ({user.tier})
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-slate-400">
-                      {user.company} · 助人 {user.helpedCount} 次
-                    </div>
-                  </div>
-                </div>
-
-                <div className="text-right">
-                  <div className="font-black text-amber-300 font-serif text-sm">
-                    {user.points.toLocaleString()}
-                  </div>
-                  <div className="text-[10px] text-slate-500">公信分</div>
-                </div>
+            {leaderboard.length === 0 ? (
+              <div className="text-center py-8 text-xs text-slate-500">
+                {t(
+                  '影响力榜单依据真实会员互助履约实时计算生成',
+                  'Influence rankings are dynamically computed from verified member fulfillment.'
+                )}
               </div>
-            ))}
+            ) : (
+              leaderboard.map((u) => (
+                <div
+                  key={u.rank}
+                  className="flex items-center justify-between p-3 rounded-xl bg-[#F7F7F5] border border-[#E8E6DF] text-xs"
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-6 h-6 rounded-full flex items-center justify-center font-bold font-mono text-xs ${
+                        u.rank === 1
+                          ? 'gold-gradient text-[#0F172A] shadow-sm'
+                          : u.rank === 2
+                          ? 'bg-slate-300 text-[#0F172A]'
+                          : u.rank === 3
+                          ? 'bg-[#9E7425] text-white'
+                          : 'bg-white border border-[#E8E6DF] text-slate-500'
+                      }`}
+                    >
+                      {u.rank}
+                    </div>
+                    <UserAvatar avatar={u.avatar} name={u.name} size="sm" className="w-7 h-7 rounded-full" />
+                    <div>
+                      <div className="font-bold text-[#0F172A] flex items-center gap-1.5">
+                        {translateUserField(u.name, isEn)}
+                        <span className="text-[10px] text-[#9E7425] font-normal">
+                          · {translateTier(u.tier, isEn)}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-500">
+                        {translateUserField(u.company, isEn)} · {t(`助人 ${u.helpedCount} 次`, `${u.helpedCount} assists`)}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <div className="font-bold text-[#9E7425] font-editorial text-sm">
+                      {u.points.toLocaleString()}
+                    </div>
+                    <div className="text-[10px] text-slate-500">{t('公信分', 'Trust Pts')}</div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
 
       {/* Redemption Confirmation Modal */}
-      {selectedReward && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-slate-900 border border-amber-500/40 rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl text-center">
-            <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center mx-auto text-amber-300">
-              {getRewardIcon(selectedReward.iconName)}
+      {selectedReward && localizedSelectedReward && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0F172A]/75 backdrop-blur-md animate-in fade-in">
+          <div className="bg-white border border-[#E8E6DF] rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl text-center">
+            <div className="w-12 h-12 rounded-2xl bg-[#F7F7F5] border border-[#C5A059]/40 flex items-center justify-center mx-auto">
+              {getRewardIcon(localizedSelectedReward.iconName)}
             </div>
 
             <div className="space-y-1">
-              <h4 className="text-base font-bold text-white">
-                确认兑换特权权益
+              <h4 className="font-editorial text-lg font-bold text-[#0F172A]">
+                {t('确认兑换特权权益', 'Confirm Privilege Redemption')}
               </h4>
-              <p className="text-xs text-amber-300 font-semibold">
-                「{selectedReward.title}」
+              <p className="text-xs text-[#9E7425] font-semibold">
+                {t(`「${localizedSelectedReward.title}」`, `"${localizedSelectedReward.title}"`)}
               </p>
-              <p className="text-xs text-slate-400 pt-1">
-                将扣除 <strong className="text-amber-400">{selectedReward.pointsCost} 积分</strong>。兑换后可在商会秘书处出示核销使用。
+              <p className="text-xs text-slate-600 pt-1">
+                {t('将扣除', 'This will deduct')}{' '}
+                <strong className="text-[#0F172A]">
+                  {localizedSelectedReward.pointsCost} {t('积分', 'Trust Credits')}
+                </strong>
+                {t('。兑换后可在商会秘书处出示核销使用。', '. Present your voucher to the WBCA Secretariat for fulfillment.')}
               </p>
             </div>
 
             <div className="pt-2 flex items-center justify-center gap-3 text-xs">
               <button
                 onClick={() => setSelectedReward(null)}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl"
+                className="px-4 py-2 bg-[#F7F7F5] border border-[#E8E6DF] hover:bg-slate-200 text-slate-700 rounded-xl font-medium"
               >
-                取消
+                {t('取消', 'Cancel')}
               </button>
               <button
                 onClick={() => handleRedeemConfirm(selectedReward)}
-                className="px-5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold rounded-xl shadow-md"
+                className="px-5 py-2 gold-gradient text-[#0F172A] font-bold rounded-xl shadow-sm hover:brightness-105"
               >
-                确认兑换
+                {t('确认兑换', 'Confirm Redemption')}
               </button>
             </div>
           </div>

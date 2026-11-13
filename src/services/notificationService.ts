@@ -42,16 +42,18 @@ export async function sendMerchantApplicationNotification(merchant: Merchant): P
   mailtoUrl?: string;
   error?: string;
 }> {
+  const isEn = typeof window !== 'undefined' && (window.location.pathname.startsWith('/en') || window.location.search.includes('lang=en'));
+  const lang = isEn ? 'en' : 'zh';
   try {
     const res = await fetch('/api/notifications/merchant-application', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ merchant }),
+      body: JSON.stringify({ merchant, lang }),
     });
     return await res.json();
   } catch (err: any) {
     console.error('Failed to trigger merchant application notification:', err);
-    return { success: false, error: err?.message || '网络连接异常' };
+    return { success: false, error: err?.message || (isEn ? 'Network connection error' : '网络连接异常') };
   }
 }
 
@@ -69,21 +71,24 @@ export async function sendChamberOpportunityNotification(
   mailtoUrl?: string;
   error?: string;
 }> {
+  const isEn = typeof window !== 'undefined' && (window.location.pathname.startsWith('/en') || window.location.search.includes('lang=en'));
+  const lang = isEn ? 'en' : 'zh';
   try {
     const res = await fetch('/api/notifications/chamber-opportunity', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ post, merchantEmails }),
+      body: JSON.stringify({ post, merchantEmails, lang }),
     });
     return await res.json();
   } catch (err: any) {
     console.error('Failed to trigger opportunity broadcast notification:', err);
-    return { success: false, error: err?.message || '网络连接异常' };
+    return { success: false, error: err?.message || (isEn ? 'Network connection error' : '网络连接异常') };
   }
 }
 
 // 3. Fetch Admin Notification Configuration
 export async function fetchNotificationConfig(): Promise<NotificationConfigResponse> {
+  const isEn = typeof window !== 'undefined' && (window.location.pathname.startsWith('/en') || window.location.search.includes('lang=en'));
   try {
     const res = await fetch('/api/notifications/config');
     return await res.json();
@@ -91,7 +96,7 @@ export async function fetchNotificationConfig(): Promise<NotificationConfigRespo
     return {
       adminEmails: ['baizw2000@gmail.com'],
       isSmtpConfigured: false,
-      smtpFrom: 'WBCA 滑铁卢融商汇秘书处 <weba.chamber@gmail.com>',
+      smtpFrom: isEn ? 'WBCA Secretariat <weba.chamber@gmail.com>' : 'WBCA 滑铁卢融商汇秘书处 <weba.chamber@gmail.com>',
     };
   }
 }
@@ -130,16 +135,18 @@ export async function saveSmtpConfig(config: SmtpConfigPayload): Promise<{
   error?: string;
   config?: any;
 }> {
+  const isEn = typeof window !== 'undefined' && (window.location.pathname.startsWith('/en') || window.location.search.includes('lang=en'));
+  const lang = isEn ? 'en' : 'zh';
   try {
     const res = await fetch('/api/notifications/smtp-config', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(config),
+      body: JSON.stringify({ ...config, lang }),
     });
     return await res.json();
   } catch (err: any) {
     console.error('Failed to save SMTP config to Firestore:', err);
-    return { success: false, error: err?.message || '网络通信异常' };
+    return { success: false, error: err?.message || (isEn ? 'Network communication error' : '网络通信异常') };
   }
 }
 
@@ -151,16 +158,18 @@ export async function testSmtpConnection(targetEmail?: string): Promise<{
   recipient?: string;
   messageId?: string;
 }> {
+  const isEn = typeof window !== 'undefined' && (window.location.pathname.startsWith('/en') || window.location.search.includes('lang=en'));
+  const lang = isEn ? 'en' : 'zh';
   try {
     const res = await fetch('/api/notifications/test-smtp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ targetEmail }),
+      body: JSON.stringify({ targetEmail, lang }),
     });
     return await res.json();
   } catch (err: any) {
     console.error('Failed to trigger SMTP test email:', err);
-    return { success: false, error: err?.message || '网络连接超时或服务器异常' };
+    return { success: false, error: err?.message || (isEn ? 'Connection timeout or server error' : '网络连接超时或服务器异常') };
   }
 }
 
@@ -170,16 +179,18 @@ export async function sendOpportunityPendingAdminNotification(post: HelpPost): P
   message?: string;
   error?: string;
 }> {
+  const isEn = typeof window !== 'undefined' && (window.location.pathname.startsWith('/en') || window.location.search.includes('lang=en'));
+  const lang = isEn ? 'en' : 'zh';
   try {
     const res = await fetch('/api/notifications/opportunity-pending-admin', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ post }),
+      body: JSON.stringify({ post, lang }),
     });
     return await res.json();
   } catch (err: any) {
     console.error('Failed to notify admin of pending opportunity:', err);
-    return { success: false, error: err?.message || '网络通信异常' };
+    return { success: false, error: err?.message || (isEn ? 'Network communication error' : '网络通信异常') };
   }
 }
 

@@ -1,9 +1,68 @@
 @import "tailwindcss";
 
+:root {
+  /* 【静奢私行风】Quiet Luxury & Editorial - Inspired by B&V Financial */
+  --brand-primary: 15, 23, 42;      /* #0F172A Midnight Obsidian */
+  --brand-secondary: 30, 41, 59;    /* #1E293B Deep Slate */
+  --brand-accent: 197, 160, 89;     /* #C5A059 Champagne Gold */
+  --brand-bg: 247, 247, 245;        /* #F7F7F5 Alabaster Warm Ivory */
+  --brand-surface: 255, 255, 255;   /* #FFFFFF Crisp Ivory Card */
+  --text-main: 15, 23, 42;          /* #0F172A Obsidian Ink */
+  --text-muted: 100, 116, 139;      /* #64748B Refined Slate */
+  --card-border: 232, 230, 223;     /* #E8E6DF Hairline Warm Divider */
+  --hero-bg-from: 15, 23, 42;       /* #0F172A Private Vault */
+  --hero-bg-to: 7, 11, 22;          /* #070B16 Abyss Obsidian */
+  --hero-border: 212, 175, 55;      /* #D4AF37 Champagne Gold Rim */
+  --hero-glow: 197, 160, 89;        /* #C5A059 Subtle Gold Radiance */
+  --ui-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.05), 0 4px 12px -2px rgba(15, 23, 42, 0.025);
+}
+
 @layer base {
   body {
+    background-color: #F7F7F5;
+    color: #0F172A;
     font-family: 'Plus Jakarta Sans', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+    transition: background-color 0.6s cubic-bezier(0.16, 1, 0.3, 1), color 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow-x: hidden;
   }
+}
+
+.font-editorial {
+  font-family: 'Playfair Display', 'Cormorant Garamond', 'Noto Serif SC', Georgia, serif;
+}
+
+.font-display {
+  font-family: 'Cormorant Garamond', 'Noto Serif SC', Georgia, serif;
+}
+
+.gold-gradient {
+  background: linear-gradient(135deg, #DFBA73 0%, #C5A059 50%, #9E7425 100%);
+}
+
+.gold-text {
+  background: linear-gradient(135deg, #D4AF37 0%, #F5E6B3 40%, #C5A059 70%, #9E7425 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gold-gradient {
+  background: linear-gradient(135deg, #F5E6B3 0%, #DFBA73 35%, #C5A059 70%, #9E7425 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gold-ink {
+  background: linear-gradient(135deg, #9E7425 0%, #C5A059 50%, #7C5817 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.luxury-shadow {
+  box-shadow: var(--ui-shadow);
+}
+
+.hairline-border {
+  border: 1px solid #E8E6DF;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
@@ -13,6 +72,47 @@
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .scrollbar-none {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Subtle fluid shimmer & ticker */
+@keyframes tickerMarquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes subtleVaultGlow {
+  0%, 100% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.04);
+  }
+}
+
+.animate-ticker {
+  display: flex;
+  width: max-content;
+  animation: tickerMarquee 42s linear infinite;
+}
+
+.animate-ticker:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-ticker {
+    animation: none;
+  }
+}
+
+.animate-vault-glow {
+  animation: subtleVaultGlow 10s ease-in-out infinite;
 }

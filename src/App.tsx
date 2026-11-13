@@ -64,7 +64,14 @@ import { AIReputationModal } from './components/AIReputationModal';
 import { AISmartMatchModal } from './components/AISmartMatchModal';
 import { UserProfileCenter } from './components/UserProfileCenter';
 import { MemberLoginModal } from './components/MemberLoginModal';
+import { MembershipPrivilegeMatrix } from './components/MembershipPrivilegeMatrix';
 import confetti from 'canvas-confetti';
+import { useLanguage } from './i18n/LanguageContext';
+import {
+  getLocalizedMerchantName,
+  translateCategory,
+  translateUserField,
+} from './i18n/domainTranslations';
 
 const INITIAL_USER_PROFILE: UserProfile = {
   uid: 'weba-member-real-001',
@@ -110,6 +117,7 @@ const GUEST_USER_PROFILE: UserProfile = {
 };
 
 export default function App() {
+  const { isEn, t } = useLanguage();
   const [currentTab, setCurrentTab] = useState<TabType>('home');
 
   // App Data States (Synced with Firestore - Clean baseline for real testing)
@@ -132,6 +140,8 @@ export default function App() {
   const [prefillMerchantForHelp, setPrefillMerchantForHelp] = useState<Merchant | null>(null);
   const [ticketModalEvent, setTicketModalEvent] = useState<ChamberEvent | null>(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
+  const [isApplyModalOpen, setIsApplyModalOpen] = useState<boolean>(false);
+  const [isPrivilegeMatrixModalOpen, setIsPrivilegeMatrixModalOpen] = useState<boolean>(false);
 
   // 1. Initial Firestore Setup & Real-time Subscriptions
   useEffect(() => {
@@ -199,7 +209,7 @@ export default function App() {
             if (found && !deepLinkResolvedRef.current) {
               deepLinkResolvedRef.current = true;
               setSelectedMerchantForDetail(found);
-              document.title = `${found.name} (${found.category}) | 滑铁卢融商汇企业认证档案`;
+              document.title = `${getLocalizedMerchantName(found, isEn)} (${translateCategory(found.category, isEn)}) | ${t('滑铁卢融商汇企业认证档案', 'WBCA Verified Corporate Profile')}`;
               // Ensure this merchant is in the merchants state for consistent UI navigation
               setMerchants((prev) => {
                 if (prev.some((m) => String(m.id) === String(found.id))) return prev;
@@ -224,26 +234,28 @@ export default function App() {
       if (found) {
         deepLinkResolvedRef.current = true;
         setSelectedMerchantForDetail(found);
-        document.title = `${found.name} (${found.category}) | 滑铁卢融商汇企业认证档案`;
+        document.title = `${getLocalizedMerchantName(found, isEn)} (${translateCategory(found.category, isEn)}) | ${t('滑铁卢融商汇企业认证档案', 'WBCA Verified Corporate Profile')}`;
       }
     }
   }, [merchants]);
 
-  // Sync document title and canonical URL parameter when merchant modal opens/closes
+  // Sync document title and canonical URL parameter when merchant modal opens/closes or language switches
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
       const url = new URL(window.location.href);
       if (selectedMerchantForDetail) {
         detailModalWasOpenRef.current = true;
-        document.title = `${selectedMerchantForDetail.name} (${selectedMerchantForDetail.category}) | 滑铁卢融商汇企业认证档案`;
+        const mName = getLocalizedMerchantName(selectedMerchantForDetail, isEn);
+        const mCat = translateCategory(selectedMerchantForDetail.category, isEn);
+        document.title = `${mName} (${mCat}) | ${t('滑铁卢融商汇企业认证档案', 'WBCA Verified Corporate Profile')}`;
         url.searchParams.set('merchant', String(selectedMerchantForDetail.id));
         window.history.replaceState({}, '', url.toString());
       } else {
-        // CRITICAL BUG FIX: Only strip ?merchant from the URL if the user was ACTUALLY viewing the modal and manually closed it!
-        // Do NOT strip it during initial page load while selectedMerchantForDetail is still null and Firestore is querying!
+        document.title = isEn
+          ? 'Waterloo Business Convergence Alliance (WBCA) | Official Executive Portal'
+          : 'Waterloo Business Convergence Alliance | 滑铁卢融商汇';
         if (detailModalWasOpenRef.current) {
-          document.title = 'Waterloo Business Convergence Alliance | 滑铁卢融商汇';
           if (url.searchParams.has('merchant')) {
             url.searchParams.delete('merchant');
             window.history.replaceState({}, '', url.toString());
@@ -251,7 +263,7 @@ export default function App() {
         }
       }
     } catch (e) {}
-  }, [selectedMerchantForDetail]);
+  }, [selectedMerchantForDetail, isEn, t]);
 
   // 2. Daily Check-in Handler
   const handleCheckIn = () => {
@@ -706,7 +718,7 @@ export default function App() {
   };
 
   const content = (
-    <div className="min-h-full flex flex-col justify-between">
+    <div className="min-h-screen flex flex-col justify-between bg-[#F7F7F5] text-[#0F172A]">
       {/* Header */}
       <Header
         currentTab={currentTab}
@@ -715,6 +727,12 @@ export default function App() {
         user={user}
         onOpenSmartMatch={() => setIsSmartMatchOpen(true)}
         onOpenLogin={() => setIsLoginModalOpen(true)}
+        onOpenMerchantApply={() => {
+          setSelectedCategory('全部');
+          setCurrentTab('directory');
+          setIsApplyModalOpen(true);
+        }}
+        onOpenPrivilegeModal={() => setIsPrivilegeMatrixModalOpen(true)}
       />
 
       {/* Main Container: Fully responsive for mobile, tablet, and desktop */}
@@ -730,6 +748,13 @@ export default function App() {
             onOpenSmartMatch={() => setIsSmartMatchOpen(true)}
             onCheckIn={handleCheckIn}
             hasCheckedInToday={Boolean(user.hasCheckedInToday)}
+            user={user}
+            onOpenMerchantApply={() => {
+              setSelectedCategory('全部');
+              setCurrentTab('directory');
+              setIsApplyModalOpen(true);
+            }}
+            onOpenLogin={() => setIsLoginModalOpen(true)}
           />
         )}
 
@@ -749,6 +774,8 @@ export default function App() {
             setSearchQuery={setSearchQuery}
             selectedCategory={selectedCategory}
             setSelectedCategory={setSelectedCategory}
+            isAddModalOpen={isApplyModalOpen}
+            onCloseAddModal={() => setIsApplyModalOpen(false)}
           />
         )}
 
@@ -775,6 +802,7 @@ export default function App() {
             onOpenMerchantApply={() => {
               setSelectedCategory('全部');
               setCurrentTab('directory');
+              setIsApplyModalOpen(true);
             }}
           />
         )}
@@ -794,6 +822,7 @@ export default function App() {
             onOpenMerchantApply={() => {
               setSelectedCategory('全部');
               setCurrentTab('directory');
+              setIsApplyModalOpen(true);
             }}
           />
         )}
@@ -824,44 +853,47 @@ export default function App() {
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="mt-12 border-t border-slate-800/80 bg-slate-950 py-8 text-xs text-slate-400">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center font-serif text-amber-300 font-bold">
-              融
+      {/* Editorial Footer */}
+      <footer className="mt-16 border-t border-[#E8E6DF] bg-white py-10 text-xs text-slate-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-[#0F172A] border border-[#C5A059]/60 flex items-center justify-center font-editorial text-[#DFBA73] font-bold text-lg shadow-sm">
+              {t('融', 'W')}
             </div>
             <div>
-              <p className="font-bold text-white">
-                滑铁卢融商汇 Waterloo Business Convergence Alliance
+              <p className="font-editorial text-sm font-bold text-[#0F172A]">
+                {t('滑铁卢融商汇 · Waterloo Business Convergence Alliance', 'Waterloo Business Convergence Alliance (WBCA)')}
               </p>
-              <p className="text-[11px] text-slate-500">
-                非营利法人机构注册编号: ON-882941-C · 智汇滑铁卢 · 融商聚势 · Firestore 云端持久化保全
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                {t(
+                  '非营利法人机构注册编号: ON-882941-C · 智汇滑铁卢 · 融商聚势 · 静奢公信力背书',
+                  'Non-Profit Corporation Reg: ON-882941-C · Waterloo Innovation Corridor · Executive Trust Seal'
+                )}
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 text-slate-400">
+          <div className="flex flex-wrap items-center gap-5 text-slate-600">
             <button
               onClick={() => setCurrentTab('profile')}
-              className="hover:text-amber-300 text-amber-400/90 font-medium transition-colors"
+              className="hover:text-[#9E7425] text-[#0F172A] font-semibold transition-colors"
             >
-              会员中心
+              {t('会员中心', 'Member Portal')}
             </button>
             <button
               onClick={() => setCurrentTab('directory')}
-              className="hover:text-amber-300 transition-colors"
+              className="hover:text-[#9E7425] transition-colors"
             >
-              认证名录
+              {t('认证名录', 'Verified Directory')}
             </button>
             <button
               onClick={() => setIsSmartMatchOpen(true)}
-              className="text-cyan-400 hover:text-cyan-300 transition-colors"
+              className="text-[#9E7425] font-semibold hover:text-[#0F172A] transition-colors"
             >
-              AI 商机撮合
+              {t('AI 商机撮合', 'AI Matchmaking')}
             </button>
-            <span className="text-slate-600">|</span>
-            <span>© {new Date().getFullYear()} WBCA. All Rights Reserved.</span>
+            <span className="text-[#E8E6DF]">|</span>
+            <span className="text-slate-400">© {new Date().getFullYear()} WBCA. All Rights Reserved.</span>
           </div>
         </div>
       </footer>
@@ -907,29 +939,29 @@ export default function App() {
 
       {/* Ticket Modal if opened from Profile */}
       {ticketModalEvent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in">
-          <div className="bg-slate-900 border border-amber-500/40 rounded-3xl max-w-sm w-full p-6 space-y-4 text-center shadow-2xl relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0F172A]/75 backdrop-blur-md animate-in fade-in">
+          <div className="bg-white border border-[#E8E6DF] rounded-2xl max-w-sm w-full p-6 space-y-4 text-center shadow-2xl relative">
             <button
               onClick={() => setTicketModalEvent(null)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white"
+              className="absolute top-4 right-4 text-slate-400 hover:text-[#0F172A]"
             >
               ✕
             </button>
 
             <div className="space-y-1 pt-2">
-              <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">
-                名商活动电子入场券
+              <span className="text-[11px] font-bold text-[#9E7425] uppercase tracking-widest">
+                {t('名商活动电子入场券', 'WBCA Executive E-Pass')}
               </span>
-              <h3 className="text-base font-bold text-white pt-1">
+              <h3 className="font-editorial text-lg font-bold text-[#0F172A] pt-1">
                 {ticketModalEvent.title}
               </h3>
-              <p className="text-xs text-slate-400">
-                持票人: {user.name} ({user.company})
+              <p className="text-xs text-slate-500">
+                {t('持票人', 'Passholder')}: {translateUserField(user.name, isEn)} ({translateUserField(user.company, isEn)})
               </p>
             </div>
 
-            <div className="bg-white p-4 rounded-2xl mx-auto inline-block border-4 border-amber-400/40">
-              <div className="w-40 h-40 bg-slate-950 p-2 rounded-xl flex flex-col items-center justify-center">
+            <div className="bg-[#F7F7F5] p-4 rounded-2xl mx-auto inline-block border border-[#C5A059]/40">
+              <div className="w-40 h-40 bg-[#0F172A] p-2 rounded-xl flex flex-col items-center justify-center">
                 <svg viewBox="0 0 100 100" className="w-32 h-32 fill-current text-white">
                   <path d="M0,0 h30 v30 h-30 z M4,4 v22 h22 v-22 z M8,8 h14 v14 h-14 z" />
                   <path d="M70,0 h30 v30 h-30 z M74,4 v22 h22 v-22 z M78,8 h14 v14 h-14 z" />
@@ -950,21 +982,22 @@ export default function App() {
               </div>
             </div>
 
-            <div className="text-xs text-slate-400">
-              现场扫码签到即可自动发放 <strong className="text-amber-300">+{ticketModalEvent.pointsReward} 信用积分</strong>
+            <div className="text-xs text-slate-600">
+              {t('现场扫码签到即可自动发放', 'Scan on arrival to automatically earn')}{' '}
+              <strong className="text-[#9E7425]">+{ticketModalEvent.pointsReward} {t('信用积分', 'Trust Credits')}</strong>
             </div>
 
             <button
               onClick={() => setTicketModalEvent(null)}
-              className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl text-xs"
+              className="w-full py-2.5 bg-[#0F172A] hover:bg-[#1E293B] text-white font-semibold rounded-xl text-xs transition-colors"
             >
-              关闭
+              {t('关闭', 'Close')}
             </button>
           </div>
         </div>
       )}
 
-      {/* Member Enterprise Login Modal (Scheme A) */}
+      {/* Member Enterprise Login Modal */}
       <MemberLoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
@@ -973,10 +1006,31 @@ export default function App() {
         onLoginSuccess={handleLoginSuccess}
         onSwitchToGuest={handleSwitchToGuest}
         onOpenMerchantApply={() => {
+          setIsLoginModalOpen(false);
           setSelectedCategory('全部');
           setCurrentTab('directory');
+          setIsApplyModalOpen(true);
         }}
       />
+
+      {/* Standalone Membership Privilege Comparison & Fast-Track Modal */}
+      {isPrivilegeMatrixModalOpen && (
+        <MembershipPrivilegeMatrix
+          user={user}
+          onOpenApplyModal={() => {
+            setIsPrivilegeMatrixModalOpen(false);
+            setSelectedCategory('全部');
+            setCurrentTab('directory');
+            setIsApplyModalOpen(true);
+          }}
+          onOpenLogin={() => {
+            setIsPrivilegeMatrixModalOpen(false);
+            setIsLoginModalOpen(true);
+          }}
+          variant="modal"
+          onClose={() => setIsPrivilegeMatrixModalOpen(false)}
+        />
+      )}
     </div>
   );
 

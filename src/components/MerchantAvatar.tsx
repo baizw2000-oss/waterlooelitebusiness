@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Building2, User } from 'lucide-react';
-import { Merchant } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface MerchantAvatarProps {
   merchant: {
     name?: string;
+    nameEn?: string;
     logo?: string;
     entityType?: 'company' | 'individual';
     category?: string;
@@ -21,11 +22,11 @@ export const MerchantAvatar: React.FC<MerchantAvatarProps> = ({
   className = '',
   showBadge = false,
 }) => {
+  const { isEn, t } = useLanguage();
   const [imageError, setImageError] = useState(false);
   const isIndividual = merchant.entityType === 'individual';
   const logo = (merchant.logo || '').trim();
 
-  // Check if logo is a real image (URL, base64 data URL, or asset path)
   const isImage =
     !imageError &&
     (logo.startsWith('http://') ||
@@ -33,7 +34,6 @@ export const MerchantAvatar: React.FC<MerchantAvatarProps> = ({
       logo.startsWith('data:image/') ||
       logo.startsWith('/'));
 
-  // Size configurations
   const sizeClasses = {
     sm: 'w-10 h-10 text-xs',
     md: 'w-12 h-12 text-sm',
@@ -48,39 +48,39 @@ export const MerchantAvatar: React.FC<MerchantAvatarProps> = ({
     xl: 'w-6 h-6 text-xs bottom-0.5 right-0.5',
   };
 
-  // Initial letter for fallback monogram
-  const displayInitial = (merchant.name || merchant.repName || '商')[0];
+  const label = isEn
+    ? (merchant.nameEn || merchant.name || merchant.repName || 'W')
+    : (merchant.name || merchant.repName || '商');
+  const displayInitial = label[0] || (isEn ? 'W' : '商');
 
   return (
     <div className={`relative inline-block flex-shrink-0 ${className}`}>
       <div
-        className={`relative overflow-hidden flex items-center justify-center font-bold select-none transition-all shadow-md ${
+        className={`relative overflow-hidden flex items-center justify-center font-bold select-none transition-all shadow-sm ${
           sizeClasses[size]
         } ${
           isIndividual
-            ? 'rounded-full bg-gradient-to-br from-slate-800 via-slate-850 to-blue-950/80 border-2 border-amber-500/30'
-            : 'rounded-2xl bg-gradient-to-br from-slate-900 via-slate-850 to-slate-950 border border-slate-700/80'
+            ? 'rounded-full bg-gradient-to-br from-[#0F172A] to-[#1E293B] border-2 border-[#C5A059]/50'
+            : 'rounded-2xl bg-gradient-to-br from-[#0F172A] to-[#1E293B] border border-[#C5A059]/35'
         }`}
       >
         {isImage ? (
           <img
             src={logo}
-            alt={merchant.name}
+            alt={label}
             onError={() => setImageError(true)}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover bg-white"
           />
         ) : logo && logo.length <= 4 && !logo.includes('/') ? (
-          // Emoji or 1-2 character monogram
           <span className="leading-none drop-shadow-sm">{logo}</span>
         ) : (
-          // Elegant Letter & Icon Monogram Fallback
-          <div className="w-full h-full flex flex-col items-center justify-center bg-slate-850 text-slate-200">
+          <div className="w-full h-full flex flex-col items-center justify-center bg-[#0F172A] text-[#DFBA73]">
             {isIndividual ? (
-              <span className="text-amber-300 font-serif tracking-tight">
+              <span className="text-[#DFBA73] font-editorial tracking-tight">
                 {displayInitial}
               </span>
             ) : (
-              <span className="text-white font-sans tracking-tight">
+              <span className="text-white font-editorial tracking-tight">
                 {displayInitial}
               </span>
             )}
@@ -88,17 +88,20 @@ export const MerchantAvatar: React.FC<MerchantAvatarProps> = ({
         )}
       </div>
 
-      {/* Entity Type Indicator Badge (Company vs Individual) */}
       {showBadge && (
         <span
-          className={`absolute rounded-full flex items-center justify-center shadow-md border ${
+          className={`absolute rounded-full flex items-center justify-center shadow-sm border ${
             badgeSizeClasses[size]
           } ${
             isIndividual
-              ? 'bg-blue-600 border-blue-400 text-white'
-              : 'bg-amber-500 border-amber-300 text-slate-950'
+              ? 'bg-[#0F172A] border-[#C5A059] text-[#DFBA73]'
+              : 'bg-[#C5A059] border-white text-[#0F172A]'
           }`}
-          title={isIndividual ? '个人执业/专家照片' : '企业官方Logo'}
+          title={
+            isIndividual
+              ? t('个人执业/专家照片', 'Independent Practitioner Portrait')
+              : t('企业官方Logo', 'Official Corporate Logo')
+          }
         >
           {isIndividual ? (
             <User className="w-2.5 h-2.5" />

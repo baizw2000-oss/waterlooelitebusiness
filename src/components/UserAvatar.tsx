@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface UserAvatarProps {
   avatar?: string;
@@ -13,10 +14,10 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
   size = 'md',
   className = '',
 }) => {
+  const { isEn } = useLanguage();
   const [hasError, setHasError] = useState(false);
   const str = (avatar || '').trim();
 
-  // Detect if avatar is an image data URL, HTTP URL, or local path
   const isImage =
     !hasError &&
     (str.startsWith('data:image/') ||
@@ -43,7 +44,6 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
     );
   }
 
-  // Emoji or short monogram (up to 4 characters)
   if (str && str.length <= 4 && !str.includes('/') && !str.includes(';') && !str.includes(':')) {
     return (
       <span className={`inline-flex items-center justify-center flex-shrink-0 leading-none select-none ${className}`}>
@@ -52,11 +52,10 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
     );
   }
 
-  // Fallback initial character if string is long or invalid
-  const initial = (name || '商')[0];
+  const initial = (name || (isEn ? 'W' : '商'))[0];
   return (
     <div
-      className={`${sizeMap[size]} bg-slate-800 border border-slate-700 rounded-full flex items-center justify-center font-bold text-amber-300 flex-shrink-0 select-none ${className}`}
+      className={`${sizeMap[size]} bg-[#0F172A] border border-[#C5A059]/45 rounded-full flex items-center justify-center font-bold text-[#DFBA73] font-editorial flex-shrink-0 select-none ${className}`}
     >
       {initial}
     </div>

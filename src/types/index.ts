@@ -204,3 +204,40 @@ export interface AIMatchResult {
   source?: string;
   notice?: string;
 }
+
+export type WaterlooNewsIndustry =
+  | 'all'
+  | 'tech'
+  | 'finance'
+  | 'realEstate'
+  | 'policy'
+  | 'commerce';
+
+export interface WaterlooNewsSource {
+  title: string;
+  uri: string;
+}
+
+export interface WaterlooNewsItem {
+  id: string;
+  headline: string;
+  summary: string;
+  industry: string;
+  publishedHint: string;
+  sourceTitle?: string;
+  sourceUrl?: string;
+}
+
+export interface WaterlooNewsResponse {
+  success: boolean;
+  industry: WaterlooNewsIndustry;
+  lang: 'zh' | 'en';
+  updatedAt: string;
+  cached?: boolean;
+  quotaLimited?: boolean;
+  source: 'google-search-grounding' | 'chamber-briefing-fallback';
+  items: WaterlooNewsItem[];
+  groundingSources: WaterlooNewsSource[];
+  searchQueries?: string[];
+  notice?: string;
+}
