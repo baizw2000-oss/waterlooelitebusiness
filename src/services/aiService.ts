@@ -3,6 +3,7 @@ import {
   AIMatchResult,
   WaterlooNewsIndustry,
   WaterlooNewsResponse,
+  GovJurisdictionId,
 } from '../types';
 import { Language } from '../i18n/LanguageContext';
 
@@ -165,12 +166,14 @@ export async function fetchSmartMatch(params: {
 export async function fetchWaterlooBusinessNews(
   industry: WaterlooNewsIndustry = 'all',
   lang: Language = 'zh',
-  forceRefresh = false
+  forceRefresh = false,
+  jurisdiction?: GovJurisdictionId
 ): Promise<WaterlooNewsResponse> {
   const params = new URLSearchParams({
     industry,
     lang,
     ...(forceRefresh ? { refresh: '1' } : {}),
+    ...(jurisdiction ? { jurisdiction } : {}),
   });
 
   const res = await fetch(`/api/news/waterloo-business?${params.toString()}`);

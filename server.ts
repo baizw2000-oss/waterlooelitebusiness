@@ -895,6 +895,433 @@ function getWaterlooNewsFallback(industry: NewsIndustryKey, isEn: boolean) {
   };
 }
 
+type JurisdictionKey = 'waterloo' | 'kitchener' | 'cambridge' | 'guelph' | 'region' | 'ontario';
+
+const JURISDICTION_SEARCH_FOCUS: Record<
+  JurisdictionKey,
+  { zhLabel: string; enLabel: string; searchTopic: string }
+> = {
+  waterloo: {
+    zhLabel: '滑铁卢市政府',
+    enLabel: 'City of Waterloo',
+    searchTopic:
+      'City of Waterloo economic development, small business grants, Community Improvement Plan (CIP), Uptown Waterloo commercial support, and innovation startup news on waterloo.ca',
+  },
+  kitchener: {
+    zhLabel: '基奇纳市政府',
+    enLabel: 'City of Kitchener',
+    searchTopic:
+      'City of Kitchener Make It Kitchener, SDG Idea Factory, small business innovation grants, and Kitchener Economic Development news on kitchener.ca and makeitkitchener.ca',
+  },
+  cambridge: {
+    zhLabel: '剑桥市政府',
+    enLabel: 'City of Cambridge',
+    searchTopic:
+      'City of Cambridge economic development, small business advisory, advanced manufacturing incentives, and commercial improvement programs on cambridge.ca',
+  },
+  guelph: {
+    zhLabel: '圭尔夫市政府',
+    enLabel: 'City of Guelph',
+    searchTopic:
+      'City of Guelph economic development, Business Centre Guelph-Wellington, Locate in Guelph innovation support, and SME grants on guelph.ca',
+  },
+  region: {
+    zhLabel: '滑铁卢地区政府',
+    enLabel: 'Region of Waterloo',
+    searchTopic:
+      'Region of Waterloo economic development, Waterloo Region Small Business Centre (WRSBC), Waterloo EDC, and Communitech regional SME & innovation announcements',
+  },
+  ontario: {
+    zhLabel: '安省政府扶企创新',
+    enLabel: 'Government of Ontario',
+    searchTopic:
+      'Government of Ontario Starter Company Plus, Regional Innovation Centres (RIC), Ontario small business grants, and SME innovation funding on ontario.ca',
+  },
+};
+
+function getJurisdictionFallback(jurisdiction: JurisdictionKey, isEn: boolean) {
+  const nowLabel = isEn ? 'Official Policy & Updates' : '政策与扶持动态';
+  const focus = JURISDICTION_SEARCH_FOCUS[jurisdiction];
+  const label = isEn ? focus.enLabel : focus.zhLabel;
+
+  const map: Record<JurisdictionKey, { zh: any[]; en: any[] }> = {
+    waterloo: {
+      zh: [
+        {
+          id: 'jur-wat-1',
+          headline: '滑铁卢市政府商业支持中心：执照、外贸关税应对与本地商企一对一对接',
+          summary: 'City of Waterloo 经济发展团队 (ecdev@waterloo.ca) 持续为本地中小微企业及科创商户提供市政许可指引、商业选址与关税应对资源。',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'City of Waterloo · Business Support',
+          sourceUrl: 'https://www.waterloo.ca/business-support/',
+        },
+        {
+          id: 'jur-wat-2',
+          headline: 'Uptown Waterloo 商业改良计划 (CIP) 资助：门面翻新、节能升级与空置商铺激活',
+          summary: '符合条件的滑铁卢市商业物业业主及租户可申请市政 CIP 补助，降低店铺升级与可持续发展改造成本。',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'City of Waterloo · CIP Grants',
+          sourceUrl: 'https://www.waterloo.ca/business-support/apply-for-a-community-improvement-grant/',
+        },
+        {
+          id: 'jur-wat-3',
+          headline: '滑铁卢市外贸与跨境关税应对专栏：协助本地创新型制造及出口企业链接资金工具',
+          summary: '汇集联邦、省及市级应对国际贸易环境变化的合规资源、市场多元化资金支持与本地推广工具。',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'City of Waterloo · Trade Resources',
+          sourceUrl: 'https://www.waterloo.ca/business-support/trade-and-tariff-resources/',
+        },
+      ],
+      en: [
+        {
+          id: 'jur-wat-1',
+          headline: 'City of Waterloo Business Support Desk: Licensing, Expansion & Direct EcDev Advisory',
+          summary: 'Waterloo Economic Development (ecdev@waterloo.ca) provides direct concierge navigation for local SMEs, tech firms, and commercial operators.',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'City of Waterloo · Business Support',
+          sourceUrl: 'https://www.waterloo.ca/business-support/',
+        },
+        {
+          id: 'jur-wat-2',
+          headline: 'Uptown Waterloo Community Improvement Plan (CIP) Grants for Facade & Sustainability Upgrades',
+          summary: 'Municipal funding supports commercial storefront modernization, environmental sustainability upgrades, and vacancy activation.',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'City of Waterloo · CIP Grants',
+          sourceUrl: 'https://www.waterloo.ca/business-support/apply-for-a-community-improvement-grant/',
+        },
+        {
+          id: 'jur-wat-3',
+          headline: 'City of Waterloo Trade & Tariff Resilience Portal Connects Exporters with Funding',
+          summary: 'Curated municipal guidance, partner funding directories, and Support Local Waterloo promotional tools for growing businesses.',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'City of Waterloo · Trade Resources',
+          sourceUrl: 'https://www.waterloo.ca/business-support/trade-and-tariff-resources/',
+        },
+      ],
+    },
+    kitchener: {
+      zh: [
+        {
+          id: 'jur-kit-1',
+          headline: 'Make It Kitchener 战略与经济发展局：助力初创团队与本土工业创新升级',
+          summary: '基奇纳市通过 Make It Kitchener 产业框架支持数字科技、先进制造、绿色能源与市中心创意企业落地成长。',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'City of Kitchener · Make It Kitchener',
+          sourceUrl: 'https://www.kitchener.ca/business-in-kitchener/economic-development/make-it-kitchener/',
+        },
+        {
+          id: 'jur-kit-2',
+          headline: 'SDG Idea Factory 创新工场：为滑铁卢—基奇纳早期创业者提供免费办公与孵化网络',
+          summary: '由基奇纳市政府携手 Waterloo Region Small Business Centre 联合运营，提供联合办公、导师咨询及路演空间。',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'Make It Kitchener · Entrepreneurial Spaces',
+          sourceUrl: 'https://www.makeitkitchener.ca/entrepreneurial-spaces/',
+        },
+        {
+          id: 'jur-kit-3',
+          headline: '基奇纳商业发展服务专页：企业开办、市政许可与产业对接指南',
+          summary: '提供在基奇纳设立与扩展企业的一站式政务指引，连接商业牌照与经济开发部门。',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'City of Kitchener · Business Development',
+          sourceUrl: 'https://www.kitchener.ca/business-in-kitchener/business-development/',
+        },
+      ],
+      en: [
+        {
+          id: 'jur-kit-1',
+          headline: 'Make It Kitchener Economic Strategy Powers High-Growth Startups & Advanced Manufacturing',
+          summary: 'City of Kitchener champions founders across downtown innovation districts, clean-tech manufacturing, and creative industries.',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'City of Kitchener · Make It Kitchener',
+          sourceUrl: 'https://www.kitchener.ca/business-in-kitchener/economic-development/make-it-kitchener/',
+        },
+        {
+          id: 'jur-kit-2',
+          headline: 'SDG Idea Factory & Kitchener Entrepreneurial Spaces Provide Co-Working & Advisory',
+          summary: 'Operated with the Waterloo Region Small Business Centre to give early-stage entrepreneurs mentorship, workshops, and growth referrals.',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'Make It Kitchener · Entrepreneurial Spaces',
+          sourceUrl: 'https://www.makeitkitchener.ca/entrepreneurial-spaces/',
+        },
+        {
+          id: 'jur-kit-3',
+          headline: 'City of Kitchener Business Development Portal Streamlines Licensing & Growth Support',
+          summary: 'Official gateway for local entrepreneurs launching, expanding, and navigating municipal permitting in Kitchener.',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'City of Kitchener · Business Development',
+          sourceUrl: 'https://www.kitchener.ca/business-in-kitchener/business-development/',
+        },
+      ],
+    },
+    cambridge: {
+      zh: [
+        {
+          id: 'jur-cam-1',
+          headline: '剑桥市经济发展局 (Invest Cambridge)：先进制造、机器人与企业选址激励通道',
+          summary: 'City of Cambridge 为落户及扩产企业提供商业用地评估、工业数据报告及快速审批协办服务。',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'City of Cambridge · Economic Development',
+          sourceUrl: 'https://www.cambridge.ca/business-building-development/economic-development/',
+        },
+        {
+          id: 'jur-cam-2',
+          headline: '剑桥市中小微企业服务专页：免费创业咨询与 Starter Company Plus 申报入口',
+          summary: '联合滑铁卢地区中小企业中心在剑桥市开展一对一顾问辅导，助力中小商户及创新项目获取省级微额拨款。',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'City of Cambridge · Small Business',
+          sourceUrl: 'https://www.cambridge.ca/business-building-development/economic-development/small-business/',
+        },
+        {
+          id: 'jur-cam-3',
+          headline: '剑桥市核心商业区 (Core Areas) 商业振兴与 CIP 补贴指引',
+          summary: '面向 Galt、Preston 与 Hespeler 核心街区商户，提供商业改良政策、店面翻新与城市更新配套支持。',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'City of Cambridge · Core Areas',
+          sourceUrl: 'https://www.cambridge.ca/business-building-development/economic-development/core-areas/',
+        },
+      ],
+      en: [
+        {
+          id: 'jur-cam-1',
+          headline: 'City of Cambridge Economic Development Drives Advanced Manufacturing & Industrial Expansion',
+          summary: 'Provides site selection intelligence, permitting guidance, and dedicated corporate growth services along the Highway 401 corridor.',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'City of Cambridge · Economic Development',
+          sourceUrl: 'https://www.cambridge.ca/business-building-development/economic-development/',
+        },
+        {
+          id: 'jur-cam-2',
+          headline: 'Cambridge Small Business Services Links Local Founders to Free Advisory & Provincial Grants',
+          summary: 'Direct access to startup consultations, business registration clinics, and Starter Company Plus micro-grant mentorship.',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'City of Cambridge · Small Business',
+          sourceUrl: 'https://www.cambridge.ca/business-building-development/economic-development/small-business/',
+        },
+        {
+          id: 'jur-cam-3',
+          headline: 'Cambridge Core Areas Revitalization & Community Improvement Incentives',
+          summary: 'Supports retail, hospitality, and commercial investors across Galt, Preston, and Hespeler historic commercial districts.',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'City of Cambridge · Core Areas',
+          sourceUrl: 'https://www.cambridge.ca/business-building-development/economic-development/core-areas/',
+        },
+      ],
+    },
+    guelph: {
+      zh: [
+        {
+          id: 'jur-gue-1',
+          headline: '圭尔夫市经济发展局：农业科技、清洁技术与先进制造产业赋能平台',
+          summary: '圭尔夫市政府重点支持可持续制造、食品与生物科技及现代服务业，提供选址支持与商业审批协助。',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'City of Guelph · Economic Development Office',
+          sourceUrl: 'https://guelph.ca/business/economic-development-office/',
+        },
+        {
+          id: 'jur-gue-2',
+          headline: '圭尔夫中小企业援助与建筑许可绿色通道：降低初创商业落地成本',
+          summary: '市政经济团队联合建筑许可部门提供开业前合规预审与选址咨询，助力本地创业者高效推进门店或研发场所审批。',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'City of Guelph · Small Business Assistance',
+          sourceUrl: 'https://guelph.ca/business/small-business-assistance/',
+        },
+        {
+          id: 'jur-gue-3',
+          headline: 'Business Centre Guelph-Wellington 创业项目库：提供一对一辅导与安省资助申报',
+          summary: '涵盖 Starter Company Plus、Foodpreneur 及 Momentum 导师配对计划，全面赋能圭尔夫与惠灵顿郡中小微企业。',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'Business Centre Guelph-Wellington · Programs',
+          sourceUrl: 'https://guelphbusiness.com/programs/',
+        },
+      ],
+      en: [
+        {
+          id: 'jur-gue-1',
+          headline: 'City of Guelph Economic Development Office Accelerates Agri-Innovation, Clean-Tech & Manufacturing',
+          summary: 'Supports investment attraction, municipal building permit navigation, and expansion initiatives across Guelph innovation corridors.',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'City of Guelph · Economic Development Office',
+          sourceUrl: 'https://guelph.ca/business/economic-development-office/',
+        },
+        {
+          id: 'jur-gue-2',
+          headline: 'City of Guelph Small Business Assistance & Building Permit Concierge',
+          summary: 'Helps new and expanding SMEs navigate municipal zoning, building permits, and startup readiness resources.',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'City of Guelph · Small Business Assistance',
+          sourceUrl: 'https://guelph.ca/business/small-business-assistance/',
+        },
+        {
+          id: 'jur-gue-3',
+          headline: 'Business Centre Guelph-Wellington Delivers Free 1-on-1 Mentorship & Provincial Funding Access',
+          summary: 'Offers Starter Company Plus, Foodpreneur Advantage, and Momentum mentorship programs backed by city and provincial partners.',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'Business Centre Guelph-Wellington · Programs',
+          sourceUrl: 'https://guelphbusiness.com/programs/',
+        },
+      ],
+    },
+    region: {
+      zh: [
+        {
+          id: 'jur-reg-1',
+          headline: '滑铁卢地区政府：投资滑铁卢区域经济策略与创业扶持资助 (Entrepreneurial Initiatives Grant)',
+          summary: 'Region of Waterloo 设立区域创业与产业人才资助专项，推动包容性创业生态建设与高成长产业协同。',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'Region of Waterloo · Entrepreneurial Grant',
+          sourceUrl: 'https://www.regionofwaterloo.ca/business-and-development/investing-in-waterloo-region/entrepreneurial-initiatives-grant/',
+        },
+        {
+          id: 'jur-reg-2',
+          headline: '滑铁卢地区中小企业中心 (WRSBC)：统筹三市的中小企业免费咨询与 Starter Company Plus 申报',
+          summary: '由滑铁卢地区及省府共建，提供公司注册合规、商业计划评审、研讨会及最高 5,000 加元创业补助申请辅导。',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'Waterloo Region Small Business Centre',
+          sourceUrl: 'https://www.waterlooregionsmallbusiness.com/',
+        },
+        {
+          id: 'jur-reg-3',
+          headline: 'Waterloo EDC 与 Communitech：区域级企业扩张、科创融资与全球供应链落户引擎',
+          summary: '协同为高成长科技企业提供免费选址情报、政府科研资金对接及加速孵化支持。',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'Waterloo EDC',
+          sourceUrl: 'https://www.waterlooedc.ca/',
+        },
+      ],
+      en: [
+        {
+          id: 'jur-reg-1',
+          headline: 'Region of Waterloo Entrepreneurial Initiatives Grant Strengthens Local Founder Ecosystem',
+          summary: 'Regional economic development funding backing workforce upskilling, newcomer entrepreneurship, and innovation support initiatives.',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'Region of Waterloo · Entrepreneurial Grant',
+          sourceUrl: 'https://www.regionofwaterloo.ca/business-and-development/investing-in-waterloo-region/entrepreneurial-initiatives-grant/',
+        },
+        {
+          id: 'jur-reg-2',
+          headline: 'Waterloo Region Small Business Centre (WRSBC) Coordinates Advisory & Micro-Grants Across KWC',
+          summary: 'Offers free 1-on-1 business consultations, startup workshops, and local administration for Ontario Starter Company Plus grants.',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'Waterloo Region Small Business Centre',
+          sourceUrl: 'https://www.waterlooregionsmallbusiness.com/',
+        },
+        {
+          id: 'jur-reg-3',
+          headline: 'Region of Waterloo, Waterloo EDC & Communitech Anchor Tech Scale-Ups and Capital Access',
+          summary: 'Integrated regional economic services supporting site selection, workforce development, and innovation commercialization.',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'Waterloo EDC',
+          sourceUrl: 'https://www.waterlooedc.ca/',
+        },
+      ],
+    },
+    ontario: {
+      zh: [
+        {
+          id: 'jur-on-1',
+          headline: '安大略省 Starter Company Plus 创业资助：最高 $5,000 加元非稀释性创业扶持拨款',
+          summary: '安省政府通过各地 Small Business Enterprise Centre 提供导师培训与微额拨款，面向 18 岁以上在安省创办或扩建企业的创业者。',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'Government of Ontario · Starter Company Plus',
+          sourceUrl: 'https://www.ontario.ca/page/starter-company-plus',
+        },
+        {
+          id: 'jur-on-2',
+          headline: '安省区域创新中心 (RICs) 网络：面向科技与高成长创新企业的政府加速枢纽',
+          summary: '滑铁卢地区对接 Communitech，为研发与商业化阶段创新企业提供市场验证、融资引荐及政府科研资金引导。',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'Government of Ontario · Regional Innovation Centres',
+          sourceUrl: 'https://www.ontario.ca/page/regional-innovation-centre-locations',
+        },
+        {
+          id: 'jur-on-3',
+          headline: '安省中小企业资助与官方扶持指南：一站式查询省府拨款与贷款工具',
+          summary: '汇集创业启动资金、制造业升级、员工技能培训及研发创新等安省官方现行资助资源。',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'Government of Ontario · Funding Directory',
+          sourceUrl: 'https://www.ontario.ca/page/business/start/get-funding-or-more-help',
+        },
+      ],
+      en: [
+        {
+          id: 'jur-on-1',
+          headline: 'Ontario Starter Company Plus: Mentorship & Micro-Grants Up to $5,000 for Local Entrepreneurs',
+          summary: 'Provincial program delivered through Waterloo Region Small Business Centre and Business Centre Guelph-Wellington for startups and expansions.',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'Government of Ontario · Starter Company Plus',
+          sourceUrl: 'https://www.ontario.ca/page/starter-company-plus',
+        },
+        {
+          id: 'jur-on-2',
+          headline: 'Ontario Regional Innovation Centres (RICs) Connect Tech Ventures to Commercialization Support',
+          summary: 'Provides specialized startup scaling, market intelligence, and capital readiness via Waterloo Region partner Communitech.',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'Government of Ontario · Regional Innovation Centres',
+          sourceUrl: 'https://www.ontario.ca/page/regional-innovation-centre-locations',
+        },
+        {
+          id: 'jur-on-3',
+          headline: 'Ontario Business Funding & Help Hub Consolidates Active Provincial Grants and Financing',
+          summary: 'Official directory of active provincial funding streams for SME digitalization, workforce training, R&D, and export expansion.',
+          industry: label,
+          publishedHint: nowLabel,
+          sourceTitle: 'Government of Ontario · Funding Directory',
+          sourceUrl: 'https://www.ontario.ca/page/business/start/get-funding-or-more-help',
+        },
+      ],
+    },
+  };
+
+  const selectedList = map[jurisdiction]?.[isEn ? 'en' : 'zh'] || map.region[isEn ? 'en' : 'zh'];
+  const sources = Array.from(
+    new Map(
+      selectedList
+        .filter((item) => item.sourceUrl && item.sourceTitle)
+        .map((item) => [item.sourceUrl, { title: item.sourceTitle, uri: item.sourceUrl }])
+    ).values()
+  );
+
+  return {
+    items: selectedList,
+    groundingSources: sources,
+  };
+}
+
 function isQuotaOrRateLimitError(err: any): boolean {
   const status = err?.status || err?.code || err?.error?.code;
   const msg = String(err?.message || err?.error?.message || '').toLowerCase();
@@ -914,10 +1341,16 @@ app.get('/api/news/waterloo-business', async (req, res) => {
       ? rawIndustry
       : 'all'
   ) as NewsIndustryKey;
+  const rawJurisdiction = String(req.query?.jurisdiction || '');
+  const jurisdiction: JurisdictionKey | undefined = ['waterloo', 'kitchener', 'cambridge', 'guelph', 'region', 'ontario'].includes(
+    rawJurisdiction
+  )
+    ? (rawJurisdiction as JurisdictionKey)
+    : undefined;
   const isEn = req.query?.lang === 'en';
   const lang: 'zh' | 'en' = isEn ? 'en' : 'zh';
   const forceRefresh = req.query?.refresh === '1' || req.query?.refresh === 'true';
-  const cacheKey = `${lang}:${industry}`;
+  const cacheKey = jurisdiction ? `${lang}:${industry}:${jurisdiction}` : `${lang}:${industry}`;
   const now = Date.now();
 
   const cached = waterlooNewsCache.get(cacheKey);
@@ -929,12 +1362,28 @@ app.get('/api/news/waterloo-business', async (req, res) => {
   }
 
   const focus = INDUSTRY_SEARCH_FOCUS[industry];
+  const jurisdictionFocus = jurisdiction ? JURISDICTION_SEARCH_FOCUS[jurisdiction] : undefined;
+  const activeSearchTopic = jurisdictionFocus
+    ? jurisdictionFocus.searchTopic
+    : industry === 'policy'
+      ? `${focus.searchTopic}, specifically including City of Waterloo, City of Kitchener, City of Cambridge, City of Guelph, Region of Waterloo, and Government of Ontario innovation and small business grants`
+      : focus.searchTopic;
+  const activeSectorLabel = jurisdictionFocus
+    ? isEn
+      ? jurisdictionFocus.enLabel
+      : jurisdictionFocus.zhLabel
+    : isEn
+      ? focus.enLabel
+      : focus.zhLabel;
 
   const buildFallbackPayload = (quotaLimited: boolean) => {
-    const fallback = getWaterlooNewsFallback(industry, isEn);
+    const fallback = jurisdiction
+      ? getJurisdictionFallback(jurisdiction, isEn)
+      : getWaterlooNewsFallback(industry, isEn);
     return {
       success: true,
       industry,
+      jurisdiction,
       lang,
       updatedAt: new Date().toISOString(),
       cached: false,
@@ -944,11 +1393,11 @@ app.get('/api/news/waterloo-business', async (req, res) => {
       groundingSources: fallback.groundingSources,
       notice: quotaLimited
         ? isEn
-          ? 'Live Google Search quota reached (429). Showing curated Waterloo sector intelligence — select a billing-enabled API key in Settings > Secrets for higher search limits.'
-          : '实时 Google Search 配额已达上限，当前展示滑铁卢精选行业简报；如需更高并发额度，请在 Settings > Secrets 中绑定计费 API 密钥。'
+          ? 'Live Google Search quota reached (429). Showing curated municipal & provincial briefings — select a billing-enabled API key in Settings > Secrets for higher search limits.'
+          : '实时 Google Search 配额已达上限，当前展示经核验的市区省政府扶企精选简报；如需更高并发额度，请在 Settings > Secrets 中绑定计费 API 密钥。'
         : isEn
-          ? 'Showing curated Waterloo Region sector intelligence.'
-          : '当前展示滑铁卢融商汇精选行业简报。',
+          ? 'Showing verified municipal & provincial SME briefings.'
+          : '当前展示经核验的滑铁卢走廊市区及安省扶企简报。',
     };
   };
 
@@ -971,7 +1420,7 @@ app.get('/api/news/waterloo-business', async (req, res) => {
     lastForcedAttemptAt = now;
   }
 
-  // Deduplicate concurrent fetches for the same industry + language
+  // Deduplicate concurrent fetches for the same industry + jurisdiction + language
   const existingPromise = inFlightNewsRequests.get(cacheKey);
   if (existingPromise) {
     try {
@@ -985,40 +1434,40 @@ app.get('/api/news/waterloo-business', async (req, res) => {
   const fetchTask = (async () => {
     const currentDate = new Date().toISOString().slice(0, 10);
     const prompt = isEn
-      ? `Today's date is ${currentDate}. Use Google Search to find 5 real, recent, verifiable news updates or economic developments specifically relevant to entrepreneurs and business owners in Waterloo Region (Waterloo, Kitchener, Cambridge, Ontario, Canada) focused on: ${focus.searchTopic}.
+      ? `Today's date is ${currentDate}. Use Google Search to find 5 real, recent, verifiable news updates, grant intakes, or official support initiatives specifically relevant to small businesses and innovative startups focused on: ${activeSearchTopic}.
 
 Return strictly valid JSON (no markdown fences, no commentary outside JSON) in this exact shape:
 {
   "items": [
     {
       "headline": "Concise executive headline under 110 characters",
-      "summary": "1-2 sentence practical takeaway for local Waterloo entrepreneurs (max 220 characters)",
-      "industry": "Short sector label such as Tech & AI, Finance & Tax, Commercial Realty, Grants & Policy, or Retail & Logistics",
-      "publishedHint": "Publication timeframe such as Nov 2026 or Recent",
-      "sourceTitle": "Publisher name from search results"
+      "summary": "1-2 sentence practical takeaway for local SMEs and innovative startups (max 220 characters)",
+      "industry": "${activeSectorLabel}",
+      "publishedHint": "Publication timeframe such as Nov 2026 or Official Program",
+      "sourceTitle": "Publisher or municipal portal name from search results"
     }
   ]
 }
 Requirements:
 - Base every item strictly on real facts returned by Google Search; never invent companies, figures, or grants.
 - Write strictly in crisp, professional English.`
-      : `今天是 ${currentDate}。请使用 Google Search 检索 5 条真实、近期且与加拿大安省滑铁卢地区（Waterloo、Kitchener、Cambridge 及安省政策）企业家和本地商户高度相关的实时商业资讯，重点聚焦：${focus.searchTopic}。
+      : `今天是 ${currentDate}。请使用 Google Search 检索 5 条真实、近期且高度聚焦以下主题的官方扶企政策、创新资助项目或商业新闻：${activeSearchTopic}。
 
 请严格输出合法的 JSON 格式（不要包含 markdown 代码块标记 \`\`\`，不要输出 JSON 以外的解释文字），结构如下：
 {
   "items": [
     {
-      "headline": "精炼专业的中文商业快讯标题（38字以内）",
-      "summary": "1-2句面向滑铁卢本地企业主与创业者的核心影响与实务解读（90字以内）",
-      "industry": "简洁行业分类（如：科技与AI、金融与财税、商业地产、政商与资助、零售与跨境物流）",
-      "publishedHint": "发布时间参考（如：2026年11月 或 近期）",
-      "sourceTitle": "检索到的权威新闻或机构来源名称"
+      "headline": "精炼专业的中文商业/政务快讯标题（38字以内）",
+      "summary": "1-2句面向本地中小企业及创新企业主的核心申报要点与影响解读（90字以内）",
+      "industry": "${activeSectorLabel}",
+      "publishedHint": "发布时间参考（如：2026年11月 或 官方持续开放）",
+      "sourceTitle": "检索到的官网或权威新闻机构名称"
     }
   ]
 }
 要求：
 - 每条快讯必须严格依据 Google Search 检索到的真实信息，严禁编造企业、数据或补贴项目。
-- 全部标题与摘要必须使用地道、专业、简洁的简体中文撰写（专有名词如 Communitech、SR&ED、Waterloo EDC 可保留英文）。`;
+- 全部标题与摘要必须使用地道、专业、简洁的简体中文撰写（专有名词如 Communitech、Starter Company Plus、CIP 可保留英文）。`;
 
     const runGroundedQuery = async (modelName: string) => {
       return await aiClient!.models.generateContent({

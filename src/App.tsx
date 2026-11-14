@@ -748,19 +748,18 @@ export default function App() {
             onOpenSmartMatch={() => setIsSmartMatchOpen(true)}
             onCheckIn={handleCheckIn}
             hasCheckedInToday={Boolean(user.hasCheckedInToday)}
-            user={user}
             onOpenMerchantApply={() => {
               setSelectedCategory('全部');
               setCurrentTab('directory');
               setIsApplyModalOpen(true);
             }}
-            onOpenLogin={() => setIsLoginModalOpen(true)}
           />
         )}
 
         {currentTab === 'directory' && (
           <MerchantDirectory
             merchants={merchants}
+            user={user}
             onSelectMerchant={(m) => setSelectedMerchantForDetail(m)}
             onOpenAIReputation={(m) => setSelectedMerchantForAI(m)}
             onAddNewMerchant={handleAddNewMerchant}
@@ -776,6 +775,7 @@ export default function App() {
             setSelectedCategory={setSelectedCategory}
             isAddModalOpen={isApplyModalOpen}
             onCloseAddModal={() => setIsApplyModalOpen(false)}
+            onOpenLogin={() => setIsLoginModalOpen(true)}
           />
         )}
 

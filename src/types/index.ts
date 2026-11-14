@@ -213,6 +213,14 @@ export type WaterlooNewsIndustry =
   | 'policy'
   | 'commerce';
 
+export type GovJurisdictionId =
+  | 'waterloo'
+  | 'kitchener'
+  | 'cambridge'
+  | 'guelph'
+  | 'region'
+  | 'ontario';
+
 export interface WaterlooNewsSource {
   title: string;
   uri: string;

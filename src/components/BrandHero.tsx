@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TabType, UserProfile } from '../types';
+import { TabType } from '../types';
 import { 
   ShieldCheck, 
   Sparkles, 
@@ -11,8 +11,8 @@ import {
   Building2,
   Compass
 } from 'lucide-react';
-import { MembershipPrivilegeMatrix } from './MembershipPrivilegeMatrix';
 import { WaterlooBusinessNewsTicker } from './WaterlooBusinessNewsTicker';
+import { GovernmentSupportHub } from './GovernmentSupportHub';
 import { useLanguage } from '../i18n/LanguageContext';
 
 interface BrandHeroProps {
@@ -21,9 +21,7 @@ interface BrandHeroProps {
   onOpenSmartMatch: () => void;
   onCheckIn: () => void;
   hasCheckedInToday: boolean;
-  user: UserProfile;
   onOpenMerchantApply: () => void;
-  onOpenLogin: () => void;
 }
 
 export const BrandHero: React.FC<BrandHeroProps> = ({
@@ -32,9 +30,7 @@ export const BrandHero: React.FC<BrandHeroProps> = ({
   onOpenSmartMatch,
   onCheckIn,
   hasCheckedInToday,
-  user,
   onOpenMerchantApply,
-  onOpenLogin,
 }) => {
   const { isEn, t } = useLanguage();
   const [searchInput, setSearchInput] = useState('');
@@ -188,17 +184,7 @@ export const BrandHero: React.FC<BrandHeroProps> = ({
         </div>
       </section>
 
-      {/* 2. Membership Privilege & Fast-Track Onboarding Matrix */}
-      <section>
-        <MembershipPrivilegeMatrix
-          user={user}
-          onOpenApplyModal={onOpenMerchantApply}
-          onOpenLogin={onOpenLogin}
-          variant="inline"
-        />
-      </section>
-
-      {/* 3. Four Core Pillars in Crisp Editorial Pure White Cards */}
+      {/* 2. Four Core Pillars in Crisp Editorial Pure White Cards */}
       <section className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-[#E8E6DF] pb-4">
           <div>
@@ -299,6 +285,9 @@ export const BrandHero: React.FC<BrandHeroProps> = ({
           })}
         </div>
       </section>
+
+      {/* 4. Regional Government Portals & SME / Innovation Policy Support Hub */}
+      <GovernmentSupportHub />
     </div>
   );
 };

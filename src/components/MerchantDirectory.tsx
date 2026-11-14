@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Merchant, BusinessCategory, MemberTier } from '../types';
+import { Merchant, BusinessCategory, MemberTier, UserProfile } from '../types';
 import { 
   Search, 
   MapPin, 
@@ -45,7 +45,9 @@ import {
   CheckCircle,
   HelpCircle,
   Share2,
-  Copy
+  Copy,
+  LayoutGrid,
+  List
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { 
@@ -58,6 +60,7 @@ import {
 } from '../services/notificationService';
 import { MerchantAvatar } from './MerchantAvatar';
 import { ImageUploader } from './ImageUploader';
+import { MembershipPrivilegeMatrix } from './MembershipPrivilegeMatrix';
 import { useLanguage } from '../i18n/LanguageContext';
 import {
   getLocalizedMerchantName,
@@ -69,6 +72,7 @@ import {
 
 interface MerchantDirectoryProps {
   merchants: Merchant[];
+  user: UserProfile;
   onSelectMerchant: (merchant: Merchant) => void;
   onOpenAIReputation: (merchant: Merchant) => void;
   onAddNewMerchant: (newMerchant: Merchant) => void;
@@ -84,10 +88,12 @@ interface MerchantDirectoryProps {
   setSelectedCategory: (cat: BusinessCategory) => void;
   isAddModalOpen?: boolean;
   onCloseAddModal?: () => void;
+  onOpenLogin: () => void;
 }
 
 export const MerchantDirectory: React.FC<MerchantDirectoryProps> = ({
   merchants,
+  user,
   onSelectMerchant,
   onOpenAIReputation,
   onAddNewMerchant,
@@ -103,9 +109,11 @@ export const MerchantDirectory: React.FC<MerchantDirectoryProps> = ({
   setSelectedCategory,
   isAddModalOpen,
   onCloseAddModal,
+  onOpenLogin,
 }) => {
   const { isEn, t } = useLanguage();
   const [tierFilter, setTierFilter] = useState<string>('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showAddModal, setShowAddModal] = useState(false);
 
   // Sync external open trigger
@@ -1032,17 +1040,53 @@ export const MerchantDirectory: React.FC<MerchantDirectoryProps> = ({
             ))}
           </div>
 
-          <span className="text-[11px]">
-            {isEn ? (
-              <>
-                Showing <strong className="text-[#9E7425]">{displayedMerchants.length}</strong> {displayedMerchants.length === 1 ? 'member' : 'members'}
-              </>
-            ) : (
-              <>
-                当前展示 <strong className="text-[#9E7425]">{displayedMerchants.length}</strong> 家商户
-              </>
-            )}
-          </span>
+          <div className="flex items-center gap-3 ml-auto">
+            <span className="text-[11px] tabular-nums whitespace-nowrap">
+              {isEn ? (
+                <>
+                  Showing <strong className="text-[#9E7425]">{displayedMerchants.length}</strong> {displayedMerchants.length === 1 ? 'member' : 'members'}
+                </>
+              ) : (
+                <>
+                  当前展示 <strong className="text-[#9E7425]">{displayedMerchants.length}</strong> 家商户
+                </>
+              )}
+            </span>
+
+            {/* Grid / List View Switcher (Grid is default) */}
+            <div
+              className="flex items-center gap-0.5 p-0.5 rounded-lg bg-[#F7F7F5] border border-[#E8E6DF]"
+              role="group"
+              aria-label={t('名录显示模式', 'Directory layout view')}
+            >
+              <button
+                type="button"
+                onClick={() => setViewMode('grid')}
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors whitespace-nowrap shrink-0 ${
+                  viewMode === 'grid'
+                    ? 'bg-[#0F172A] text-[#DFBA73] shadow-sm'
+                    : 'text-slate-600 hover:text-[#0F172A]'
+                }`}
+                title={t('区块卡片展示（默认）', 'Grid card view (Default)')}
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                <span>{t('区块', 'Grid')}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('list')}
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors whitespace-nowrap shrink-0 ${
+                  viewMode === 'list'
+                    ? 'bg-[#0F172A] text-[#DFBA73] shadow-sm'
+                    : 'text-slate-600 hover:text-[#0F172A]'
+                }`}
+                title={t('高密度列表展示（适合商户众多时快速检索）', 'Compact list view for fast scanning')}
+              >
+                <List className="w-3.5 h-3.5" />
+                <span>{t('列表', 'List')}</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1110,8 +1154,9 @@ export const MerchantDirectory: React.FC<MerchantDirectoryProps> = ({
         </div>
       )}
 
-      {/* Merchants Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      {/* Merchants Grid (Default) vs. Compact Enterprise List */}
+      {displayedMerchants.length > 0 && viewMode === 'grid' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {displayedMerchants.map((merchant) => {
           const isPending = merchant.auditStatus === 'PENDING_APPROVAL';
           const isSuspended = merchant.auditStatus === 'SUSPENDED' || merchant.isDelisted;
@@ -1450,7 +1495,263 @@ export const MerchantDirectory: React.FC<MerchantDirectoryProps> = ({
             </div>
           );
         })}
-      </div>
+        </div>
+      )}
+
+      {/* High-Density List View for Large Member Directories */}
+      {displayedMerchants.length > 0 && viewMode === 'list' && (
+        <div className="bg-white rounded-2xl border border-[#E8E6DF] luxury-shadow overflow-hidden">
+          {/* Desktop Table Header */}
+          <div className="hidden lg:grid lg:grid-cols-12 gap-3 px-5 py-3 bg-[#F7F7F5] border-b border-[#E8E6DF] text-[11px] font-bold text-slate-500">
+            <div className="col-span-4">{t('认证企业 / 执业专家', 'Enterprise / Practitioner')}</div>
+            <div className="col-span-2">{t('所属行业 · 级别', 'Sector · Tier')}</div>
+            <div className="col-span-3">{t('代表人 · 所在地', 'Principal · Location')}</div>
+            <div className="col-span-1 text-right">{t('商誉评分', 'Trust')}</div>
+            <div className="col-span-2 text-right">{t('快捷操作', 'Actions')}</div>
+          </div>
+
+          <div className="divide-y divide-[#E8E6DF]">
+            {displayedMerchants.map((merchant) => {
+              const isPending = merchant.auditStatus === 'PENDING_APPROVAL';
+              const isSuspended = merchant.auditStatus === 'SUSPENDED' || merchant.isDelisted;
+              const primaryName = getLocalizedMerchantName(merchant, isEn);
+              const secondaryName = getLocalizedMerchantSecondaryName(merchant, isEn);
+              const localizedTagline = translateSystemText(merchant.tagline, isEn);
+
+              return (
+                <div
+                  key={merchant.id}
+                  className={`px-4 sm:px-5 py-3.5 transition-colors hover:bg-[#F7F7F5]/70 ${
+                    isSuspended
+                      ? 'bg-rose-50/35'
+                      : isPending
+                      ? 'bg-amber-50/35'
+                      : ''
+                  }`}
+                >
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:items-center">
+                    {/* Enterprise Identity */}
+                    <div className="lg:col-span-4 flex items-center gap-3 min-w-0">
+                      <MerchantAvatar
+                        merchant={merchant}
+                        size="sm"
+                        showBadge={true}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <button
+                            type="button"
+                            onClick={() => onSelectMerchant(merchant)}
+                            className="text-sm font-bold text-[#0F172A] hover:text-[#9E7425] transition-colors truncate font-editorial text-left"
+                          >
+                            {primaryName}
+                          </button>
+                          <span className="text-[10px] font-semibold text-slate-400 shrink-0">
+                            · {merchant.entityType === 'individual' ? t('个人', 'Ind.') : t('企业', 'Corp.')}
+                          </span>
+                        </div>
+                        {secondaryName && (
+                          <div className="text-[11px] text-slate-500 truncate">
+                            {secondaryName}
+                          </div>
+                        )}
+                        {localizedTagline && (
+                          <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                            {localizedTagline}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Sector & Tier (Unboxed clean metadata) */}
+                    <div className="lg:col-span-2 flex flex-wrap lg:flex-col gap-x-2 gap-y-0.5 text-xs">
+                      <span className="font-semibold text-[#0F172A] truncate">
+                        {translateCategory(merchant.category, isEn)}
+                      </span>
+                      <span
+                        className={`text-[11px] font-medium truncate ${
+                          isSuspended
+                            ? 'text-rose-700'
+                            : isPending
+                            ? 'text-[#9E7425]'
+                            : merchant.tier === '创会理事单位' || merchant.tier === '金牌会员单位'
+                            ? 'text-[#9E7425]'
+                            : 'text-slate-500'
+                        }`}
+                      >
+                        {isSuspended
+                          ? t('已下架屏蔽', 'Delisted')
+                          : isPending
+                          ? t('待审批入驻', 'Pending Review')
+                          : translateTier(merchant.tier, isEn)}
+                      </span>
+                    </div>
+
+                    {/* Principal & Location */}
+                    <div className="lg:col-span-3 space-y-0.5 text-xs text-slate-600 min-w-0">
+                      <div className="flex items-center gap-1.5 text-[#0F172A] font-medium truncate">
+                        <User className="w-3.5 h-3.5 text-[#C5A059] shrink-0" />
+                        <span className="truncate">
+                          {merchant.repName} ({translateSystemText(merchant.repTitle, isEn)})
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[11px] text-slate-500 truncate">
+                        <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                        <span className="truncate">{merchant.address}</span>
+                        <span aria-hidden="true" className="text-slate-300 shrink-0">·</span>
+                        <span className="tabular-nums shrink-0">
+                          {t(`建业 ${merchant.establishedYear}`, `Est. ${merchant.establishedYear}`)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Rating & Credibility Score */}
+                    <div className="lg:col-span-1 flex lg:flex-col items-center lg:items-end justify-between lg:justify-center gap-2 text-xs tabular-nums">
+                      <div className="inline-flex items-center gap-1 text-[#9E7425] font-semibold">
+                        <Star className="w-3.5 h-3.5 fill-[#C5A059] text-[#C5A059]" />
+                        <span>{merchant.rating}</span>
+                      </div>
+                      <div
+                        className={`inline-flex items-center gap-1 text-[11px] font-semibold ${
+                          isSuspended ? 'text-rose-700' : 'text-emerald-700'
+                        }`}
+                      >
+                        {isSuspended ? (
+                          <ShieldX className="w-3 h-3" />
+                        ) : (
+                          <ShieldCheck className="w-3 h-3" />
+                        )}
+                        <span>{merchant.credibilityScore}/100</span>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="lg:col-span-2 flex items-center justify-end gap-1.5 flex-wrap">
+                      {isSuspended ? (
+                        <>
+                          <button
+                            onClick={() => handleStartRelist(merchant.id)}
+                            className="px-2.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold rounded-lg text-[11px] whitespace-nowrap shrink-0"
+                          >
+                            {t('恢复', 'Restore')}
+                          </button>
+                          <button
+                            onClick={() => handleStartEdit(merchant)}
+                            className="px-2.5 py-1.5 bg-[#F7F7F5] hover:bg-[#EFECE4] text-[#0F172A] border border-[#E8E6DF] rounded-lg text-[11px] whitespace-nowrap shrink-0"
+                          >
+                            {t('修改', 'Edit')}
+                          </button>
+                          <button
+                            onClick={() => handleStartDelete(merchant)}
+                            className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-[11px] whitespace-nowrap shrink-0"
+                          >
+                            {t('删除', 'Delete')}
+                          </button>
+                        </>
+                      ) : isPending ? (
+                        <>
+                          <button
+                            onClick={() => handleApprove(merchant.id)}
+                            className="px-2.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold rounded-lg text-[11px] whitespace-nowrap shrink-0"
+                          >
+                            {t('核准上线', 'Approve')}
+                          </button>
+                          <button
+                            onClick={() => handleStartEdit(merchant)}
+                            className="px-2 py-1.5 bg-[#F7F7F5] hover:bg-[#EFECE4] text-[#0F172A] border border-[#E8E6DF] rounded-lg text-[11px] whitespace-nowrap shrink-0"
+                          >
+                            {t('修改', 'Edit')}
+                          </button>
+                          <button
+                            onClick={() => handleReject(merchant.id)}
+                            className="px-2 py-1.5 bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-700 border border-[#E8E6DF] rounded-lg text-[11px] whitespace-nowrap shrink-0"
+                          >
+                            {t('驳回', 'Decline')}
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => onSelectMerchant(merchant)}
+                            className="px-3 py-1.5 bg-[#0F172A] hover:bg-slate-800 text-white rounded-lg text-[11px] font-semibold transition-colors whitespace-nowrap shrink-0"
+                          >
+                            {t('主页', 'Profile')}
+                          </button>
+                          <button
+                            onClick={() => onOpenAIReputation(merchant)}
+                            className="px-2.5 py-1.5 bg-[#F7F7F5] hover:bg-[#EFECE4] border border-[#C5A059]/40 text-[#9E7425] rounded-lg text-[11px] font-semibold inline-flex items-center gap-1 transition-colors whitespace-nowrap shrink-0"
+                            title={t('生成Gemini AI多维商誉与舆情诊断', 'Generate AI Reputation & Trust Analysis')}
+                          >
+                            <Sparkles className="w-3 h-3 text-[#C5A059]" />
+                            <span>{t('AI诊断', 'AI')}</span>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const origin = typeof window !== 'undefined' ? window.location.origin : '';
+                              const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+                              const shareUrl = `${origin}${pathname}?merchant=${merchant.id}`;
+                              navigator.clipboard?.writeText(shareUrl);
+                              setCopiedMerchantId(merchant.id);
+                              setTimeout(() => setCopiedMerchantId(null), 2000);
+                            }}
+                            className={`p-1.5 rounded-lg border text-xs transition-colors shrink-0 ${
+                              copiedMerchantId === merchant.id
+                                ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
+                                : 'bg-[#F7F7F5] hover:bg-[#EFECE4] border-[#E8E6DF] text-slate-600 hover:text-[#9E7425]'
+                            }`}
+                            title={t(
+                              `复制该商企专属直达链接 (?merchant=${merchant.id})`,
+                              `Copy direct listing link (?merchant=${merchant.id})`
+                            )}
+                          >
+                            {copiedMerchantId === merchant.id ? (
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                            ) : (
+                              <Share2 className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Admin Quick Row Toolbar when Admin Mode is ON for Live Merchants */}
+                  {adminViewMode && !isSuspended && !isPending && (
+                    <div className="mt-2 pt-2 border-t border-[#E8E6DF]/70 flex items-center justify-end gap-2 text-[11px]">
+                      <span className="text-[#9E7425] font-semibold mr-auto inline-flex items-center gap-1">
+                        <ShieldAlert className="w-3 h-3 text-[#C5A059]" />
+                        {t('管理处置', 'Admin')}
+                      </span>
+                      <button
+                        onClick={() => handleStartEdit(merchant)}
+                        className="px-2 py-1 rounded bg-[#F7F7F5] hover:bg-[#EFECE4] border border-[#E8E6DF] text-[#0F172A] inline-flex items-center gap-1"
+                      >
+                        <Edit3 className="w-3 h-3 text-[#9E7425]" />
+                        {t('修改', 'Edit')}
+                      </button>
+                      <button
+                        onClick={() => handleStartDelist(merchant)}
+                        className="px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 border border-[#C5A059]/40 text-[#9E7425] inline-flex items-center gap-1"
+                      >
+                        <Ban className="w-3 h-3 text-[#C5A059]" />
+                        {t('下架', 'Delist')}
+                      </button>
+                      <button
+                        onClick={() => handleStartDelete(merchant)}
+                        className="px-2 py-1 rounded bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 inline-flex items-center gap-1"
+                      >
+                        <Trash2 className="w-3 h-3 text-rose-600" />
+                        {t('删除', 'Delete')}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Empty State for Clean Real Testing Stage or Search No Results */}
       {displayedMerchants.length === 0 && (
@@ -1496,6 +1797,16 @@ export const MerchantDirectory: React.FC<MerchantDirectoryProps> = ({
           </div>
         </div>
       )}
+
+      {/* Membership Privilege & Fast-Track Onboarding Matrix (Relocated to bottom of Directory) */}
+      <section className="pt-8 mt-4 border-t border-[#E8E6DF]">
+        <MembershipPrivilegeMatrix
+          user={user}
+          onOpenApplyModal={() => setShowAddModal(true)}
+          onOpenLogin={onOpenLogin}
+          variant="inline"
+        />
+      </section>
 
       {/* Add Merchant Modal */}
       {showAddModal && (
